@@ -71,6 +71,7 @@ export default function RolesPage() {
   };
 
   const toggle = async (role: string, permission: Permission) => {
+    if (role === "super_admin") return;
     const currentPerms = new Set(matrix[role] || []);
     if (currentPerms.has(permission)) currentPerms.delete(permission);
     else currentPerms.add(permission);
@@ -158,6 +159,7 @@ export default function RolesPage() {
   const [editPermissions, setEditPermissions] = useState<Permission[]>([]);
 
   const openEdit = (roleName: string) => {
+    if (roleName === "super_admin") return;
     const roleDef = roles.find((r) => r.name === roleName);
     if (!roleDef) return;
     setEditingRole({
@@ -251,13 +253,15 @@ export default function RolesPage() {
                     <th key={role} className="p-3 capitalize text-center">
                       <div className="inline-flex items-center gap-1.5">
                         {role.replace(/_/g, " ")}
-                        <button
-                          onClick={() => openEdit(role)}
-                          className="text-muted-foreground hover:text-foreground"
-                          title="Edit role"
-                        >
-                          <Pencil className="h-3 w-3" />
-                        </button>
+                        {role !== "super_admin" && (
+                          <button
+                            onClick={() => openEdit(role)}
+                            className="text-muted-foreground hover:text-foreground"
+                            title="Edit role"
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </button>
+                        )}
                         {!builtinRoles.has(role) && (
                           <button
                             onClick={() => deleteRole(role)}
@@ -281,6 +285,8 @@ export default function RolesPage() {
                         <Checkbox
                           checked={matrix[role]?.includes(permission)}
                           onCheckedChange={() => toggle(role, permission)}
+                          disabled={role === "super_admin"}
+                          className={role === "super_admin" ? "opacity-50" : ""}
                         />
                       </td>
                     ))}

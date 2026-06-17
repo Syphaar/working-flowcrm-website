@@ -12,7 +12,7 @@ import type { Activity } from "@/lib/types";
 
 export default function AuditPage() {
   const { activities, bulkRemove } = useData();
-  const { can } = useAuth();
+  const { can, isAdmin } = useAuth();
   useEffect(() => {
     document.title = "Audit Log — FlowCRM";
   }, []);

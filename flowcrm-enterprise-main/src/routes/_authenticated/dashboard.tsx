@@ -55,7 +55,7 @@ import { exportCSV, exportPDF, exportXLSX } from "@/lib/exporters";
 import { toast } from "sonner";
 
 export default function DashboardPage() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, can } = useAuth();
   const { leads, customers, deals, tasks, activities, users, notifications } = useData();
   const navigate = useNavigate();
 
@@ -124,11 +124,13 @@ export default function DashboardPage() {
     return users.slice(0, 6).map((user) => ({
       name: user.name.split(" ")[0],
       deals: deals.filter((deal) => deal.ownerId === user.id && deal.status === "Won").length,
-      revenue: deals
-        .filter((deal) => deal.ownerId === user.id && deal.status === "Won")
-        .reduce((sum, deal) => sum + deal.value, 0),
+      ...(can("view_revenue") && {
+        revenue: deals
+          .filter((deal) => deal.ownerId === user.id && deal.status === "Won")
+          .reduce((sum, deal) => sum + deal.value, 0),
+      }),
     }));
-  }, [users, deals]);
+  }, [users, deals, can]);
 
   const pieColors = ["#4F46E5", "#06B6D4", "#F97316", "#22C55E", "#F59E0B", "#EF4444", "#8B5CF6"];
 
@@ -268,14 +270,16 @@ export default function DashboardPage() {
           accent="accent"
           hint="In pipeline"
         />
-        <StatCard
-          label="Revenue"
-          value={fmtCurrency(revenue)}
-          icon={DollarSign}
-          accent="success"
-          hint="Closed Won"
-          delta={{ value: 18, positive: true }}
-        />
+        {can("view_revenue") && (
+          <StatCard
+            label="Revenue"
+            value={fmtCurrency(revenue)}
+            icon={DollarSign}
+            accent="success"
+            hint="Closed Won"
+            delta={{ value: 18, positive: true }}
+          />
+        )}
         <StatCard
           label="Forecast"
           value={fmtCurrency(forecast)}
@@ -311,7 +315,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {visible("revenue") && (
+        {can("view_revenue") && visible("revenue") && (
           <Card className="lg:col-span-2 shadow-card">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Revenue & Forecast</CardTitle>

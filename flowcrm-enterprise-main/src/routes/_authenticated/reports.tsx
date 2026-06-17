@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from "react";
+import { useAuth } from "@/context/AuthContext";
 import { useData } from "@/context/DataContext";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +25,7 @@ import { format, subMonths, startOfMonth } from "date-fns";
 import { fmtCurrency } from "@/lib/format";
 
 export default function ReportsPage() {
+  const { can } = useAuth();
   const { deals, leads, customers, users } = useData();
   useEffect(() => {
     document.title = "Reports — FlowCRM";
@@ -83,34 +85,36 @@ export default function ReportsPage() {
         icon={BarChart3}
       />
       <div className="grid lg:grid-cols-2 gap-4">
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle>Revenue Trend</CardTitle>
-          </CardHeader>
-          <CardContent className="h-72">
-            <ResponsiveContainer>
-              <AreaChart data={revenueSeries}>
-                <defs>
-                  <linearGradient id="rg" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#4F46E5" stopOpacity={0.4} />
-                    <stop offset="100%" stopColor="#4F46E5" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                <XAxis dataKey="month" />
-                <YAxis tickFormatter={(value) => `$${value / 1000}k`} />
-                <Tooltip formatter={(value: unknown) => fmtCurrency(Number(value) || 0)} />
-                <Area
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="#4F46E5"
-                  fill="url(#rg)"
-                  strokeWidth={2}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {can("view_revenue") && (
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle>Revenue Trend</CardTitle>
+            </CardHeader>
+            <CardContent className="h-72">
+              <ResponsiveContainer>
+                <AreaChart data={revenueSeries}>
+                  <defs>
+                    <linearGradient id="rg" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#4F46E5" stopOpacity={0.4} />
+                      <stop offset="100%" stopColor="#4F46E5" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                  <XAxis dataKey="month" />
+                  <YAxis tickFormatter={(value) => `$${value / 1000}k`} />
+                  <Tooltip formatter={(value: unknown) => fmtCurrency(Number(value) || 0)} />
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#4F46E5"
+                    fill="url(#rg)"
+                    strokeWidth={2}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
         <Card className="shadow-card">
           <CardHeader>
             <CardTitle>Customer Growth</CardTitle>
@@ -197,7 +201,7 @@ export default function ReportsPage() {
                   <th className="text-left p-3">Member</th>
                   <th className="text-left p-3">Role</th>
                   <th className="text-left p-3">Deals Won</th>
-                  <th className="text-left p-3">Revenue</th>
+                  {can("view_revenue") && <th className="text-left p-3">Revenue</th>}
                   <th className="text-left p-3">Leads</th>
                   <th className="text-left p-3">Status</th>
                 </tr>
@@ -214,9 +218,11 @@ export default function ReportsPage() {
                         {user.role.replace("_", " ")}
                       </td>
                       <td className="p-3">{won.length}</td>
-                      <td className="p-3 font-semibold">
-                        {fmtCurrency(won.reduce((sum, deal) => sum + deal.value, 0))}
-                      </td>
+                      {can("view_revenue") && (
+                        <td className="p-3 font-semibold">
+                          {fmtCurrency(won.reduce((sum, deal) => sum + deal.value, 0))}
+                        </td>
+                      )}
                       <td className="p-3">
                         {leads.filter((lead) => lead.ownerId === user.id).length}
                       </td>

@@ -129,17 +129,19 @@ export default function LeadsPage() {
       header: "",
       render: (lead) => (
         <div className="flex justify-end gap-1">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={(event) => {
-              event.stopPropagation();
-              setEditing(lead);
-              setOpen(true);
-            }}
-          >
-            Edit
-          </Button>
+          {can("edit_leads") && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={(event) => {
+                event.stopPropagation();
+                setEditing(lead);
+                setOpen(true);
+              }}
+            >
+              Edit
+            </Button>
+          )}
           <Button
             size="sm"
             variant="ghost"
@@ -150,17 +152,19 @@ export default function LeadsPage() {
           >
             <ArrowRightCircle className="h-4 w-4" />
           </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-destructive"
-            onClick={(event) => {
-              event.stopPropagation();
-              del(lead);
-            }}
-          >
-            Delete
-          </Button>
+          {can("delete_leads") && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-destructive"
+              onClick={(event) => {
+                event.stopPropagation();
+                del(lead);
+              }}
+            >
+              Delete
+            </Button>
+          )}
         </div>
       ),
       className: "text-right",
@@ -315,19 +319,23 @@ export default function LeadsPage() {
         icon={UserPlus}
         actions={
           <>
-            <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
-              <Upload className="mr-2 h-4 w-4" /> Import CSV
-            </Button>
-            <Button
-              size="sm"
-              className="gradient-primary text-white"
-              onClick={() => {
-                setEditing(null);
-                setOpen(true);
-              }}
-            >
-              <Plus className="mr-2 h-4 w-4" /> New Lead
-            </Button>
+            {can("edit_leads") && (
+              <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+                <Upload className="mr-2 h-4 w-4" /> Import CSV
+              </Button>
+            )}
+            {can("edit_leads") && (
+              <Button
+                size="sm"
+                className="gradient-primary text-white"
+                onClick={() => {
+                  setEditing(null);
+                  setOpen(true);
+                }}
+              >
+                <Plus className="mr-2 h-4 w-4" /> New Lead
+              </Button>
+            )}
           </>
         }
       />
@@ -357,21 +365,25 @@ export default function LeadsPage() {
           </Select>
         }
         bulkActions={[
-          {
-            label: "Delete",
-            destructive: true,
-            onClick: (ids) => {
-              bulkRemove("leads", ids);
-              log({
-                userId: user!.id,
-                userName: user!.name,
-                role: user!.role,
-                kind: "delete",
-                description: `Bulk deleted ${ids.length} leads.`,
-              });
-              toast.success(`${ids.length} leads deleted`);
-            },
-          },
+          ...(can("delete_leads")
+            ? [
+                {
+                  label: "Delete" as const,
+                  destructive: true as const,
+                  onClick: (ids: string[]) => {
+                    bulkRemove("leads", ids);
+                    log({
+                      userId: user!.id,
+                      userName: user!.name,
+                      role: user!.role,
+                      kind: "delete",
+                      description: `Bulk deleted ${ids.length} leads.`,
+                    });
+                    toast.success(`${ids.length} leads deleted`);
+                  },
+                },
+              ]
+            : []),
           {
             label: "Mark Active",
             onClick: (ids) => {
