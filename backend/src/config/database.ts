@@ -95,7 +95,14 @@ export async function loadDatabase(): Promise<void> {
     useJsonFallback = true;
     console.warn("PostgreSQL unavailable — using JSON file as fallback");
   } else {
-    console.log(`Loaded ${TABLE_NAMES.length} tables from database`);
+    const allEmpty = TABLE_NAMES.every(name => !cache[name] || cache[name].length === 0);
+    if (allEmpty) {
+      console.warn("Database is empty — falling back to JSON seed data");
+      loadFromJson();
+      useJsonFallback = true;
+    } else {
+      console.log(`Loaded ${TABLE_NAMES.length} tables from database`);
+    }
   }
 
   loaded = true;
