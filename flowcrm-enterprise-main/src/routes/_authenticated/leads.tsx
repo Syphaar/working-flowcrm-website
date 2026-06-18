@@ -160,7 +160,7 @@ export default function LeadsPage() {
             <Button
               size="sm"
               variant="ghost"
-              className="text-destructive"
+              className="text-foreground"
               onClick={(event) => {
                 event.stopPropagation();
                 del(lead);

@@ -197,7 +197,7 @@ export default function NotificationsPage() {
                     toast.success("Deleted");
                   }}
                 >
-                  <Trash2 className="h-4 w-4 text-destructive" />
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             </CardContent>

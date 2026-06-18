@@ -171,7 +171,7 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div className="mt-6 flex justify-end">
-                <Button onClick={saveProfile} className="gradient-primary text-white">
+                <Button onClick={saveProfile} className="bg-[#5D52E5] text-white">
                   Save changes
                 </Button>
               </div>
@@ -294,7 +294,7 @@ export default function SettingsPage() {
             <Button variant="outline" onClick={() => { setTwoFASetupOpen(false); setOtp(""); setTwoFASecret(""); }}>
               Cancel
             </Button>
-            <Button onClick={handleEnableConfirm} disabled={otp.length !== 6} className="gradient-primary text-white">
+            <Button onClick={handleEnableConfirm} disabled={otp.length !== 6} className="bg-[#5D52E5] text-white">
               Verify & Enable
             </Button>
           </DialogFooter>

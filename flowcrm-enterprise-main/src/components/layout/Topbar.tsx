@@ -105,7 +105,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
             <Button variant="ghost" size="icon" className="relative hover:bg-[#5D52E5] hover:text-white">
               <Bell className="h-4 w-4" />
               {unread > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+                <span className="absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
                   {unread}
                 </span>
               )}

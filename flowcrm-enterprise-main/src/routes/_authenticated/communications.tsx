@@ -154,7 +154,9 @@ export default function CommunicationsPage() {
                     <div className="flex items-center gap-2">
                       {isAdmin && (
                         <>
-                          <button
+                          <Button
+                            size="icon"
+                            variant="ghost"
                             onClick={() => {
                               setEditing(comm);
                               setForm({
@@ -165,21 +167,21 @@ export default function CommunicationsPage() {
                               });
                               setOpen(true);
                             }}
-                            className="text-muted-foreground hover:text-primary transition-colors"
                             title="Edit"
                           >
                             <Pencil className="h-4 w-4" />
-                          </button>
-                          <button
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
                             onClick={() => {
                               bulkRemove("communications", [comm.id]);
                               toast.success("Communication deleted");
                             }}
-                            className="text-muted-foreground hover:text-destructive transition-colors"
                             title="Delete"
                           >
                             <Trash2 className="h-4 w-4" />
-                          </button>
+                          </Button>
                         </>
                       )}
                       <div className="text-xs text-muted-foreground">
