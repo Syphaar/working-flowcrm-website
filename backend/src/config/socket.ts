@@ -6,7 +6,11 @@ let io: SocketServer | null = null;
 export function initializeSocket(httpServer: HttpServer): SocketServer {
   io = new SocketServer(httpServer, {
     cors: {
-      origin: ["http://localhost:5173", "http://localhost:4173"],
+      origin: [
+        "http://localhost:5173",
+        "http://localhost:4173",
+        "https://flowcrm-website.vercel.app",
+      ],
       credentials: true,
     },
   });

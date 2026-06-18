@@ -56,11 +56,13 @@ async function request<T>(
   });
 
   if (response.status === 401) {
+    const hadToken = !!getToken();
     setToken(null);
-    if (typeof window !== "undefined") {
+    if (hadToken && typeof window !== "undefined") {
       window.location.href = "/auth/login";
     }
-    throw new ApiError("Session expired", 401);
+    const body = await response.json().catch(() => ({}));
+    throw new ApiError(body.error || (hadToken ? "Session expired" : "Authentication failed"), 401);
   }
 
   if (!response.ok) {

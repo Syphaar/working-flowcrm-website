@@ -31,19 +31,26 @@ export async function loginUser(email: string, password: string) {
   }
 
   const now = new Date().toISOString();
+  const lastLogout = typeof user.lastLogout === "string" ? user.lastLogout : now;
   const updatedUser = {
     ...user,
     status: "online",
     lastLogin: now,
     lastActive: now,
+    lastLogout,
   };
   insert("users", updatedUser);
 
-  const token = signToken({
-    userId: user.id,
-    name: user.name,
-    role: user.role,
-  });
+  let token: string;
+  try {
+    token = signToken({
+      userId: user.id,
+      name: user.name,
+      role: user.role,
+    });
+  } catch (err) {
+    throw new Error(`Failed to sign token: ${(err as Error).message}`);
+  }
 
   const { password: _, ...userWithoutPassword } = updatedUser;
   return { token, user: userWithoutPassword };
@@ -179,18 +186,23 @@ export async function registerUser(
     status: "online",
     lastActive: now,
     lastLogin: now,
-    lastLogout: "",
+    lastLogout: now,
     createdAt: now,
     twoFactor: false,
   };
 
   insert("users", newUser);
 
-  const token = signToken({
-    userId: id,
-    name,
-    role: "sales_executive",
-  });
+  let token: string;
+  try {
+    token = signToken({
+      userId: id,
+      name,
+      role: "sales_executive",
+    });
+  } catch (err) {
+    throw new Error(`Failed to sign token: ${(err as Error).message}`);
+  }
 
   const { password: _, ...userWithoutPassword } = newUser;
   return { token, user: userWithoutPassword };
