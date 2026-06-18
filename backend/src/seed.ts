@@ -1,3 +1,5 @@
+import { fileURLToPath } from "url";
+import path from "path";
 import bcrypt from "bcryptjs";
 import { resetDatabase, insert } from "./config/database.js";
 
@@ -65,7 +67,7 @@ const TAGS = [
   "vip", "trial", "onboarding", "expansion",
 ];
 const STAGES = [
-  "New Lead", "Contacted", "Qualified", "Proposal Sent",
+  "New_Lead", "Contacted", "Qualified", "Proposal_Sent",
   "Negotiation", "Won", "Lost",
 ];
 const DEPARTMENTS = [
@@ -84,7 +86,7 @@ const generatePhone = () =>
     9999
   )}`;
 
-async function seed() {
+export async function seed() {
   resetDatabase();
 
   const superAdminPassword = await bcrypt.hash("SuperAdmin123", 10);
@@ -235,7 +237,7 @@ async function seed() {
       company: company.name,
       email: generateEmail(name, company.name),
       phone: generatePhone(),
-      status: pickRandom(["Active", "Active", "VIP", "At Risk", "Churned"]),
+      status: pickRandom(["Active", "Active", "VIP", "At_Risk", "Churned"]),
       totalSpend: randomBetween(5000, 500000),
       ownerId: pickRandom(ownerIds),
       createdAt: daysAgo(randomBetween(30, 700)),
@@ -281,7 +283,7 @@ async function seed() {
       description: "Auto-generated demo task.",
       priority: pickRandom(["Low", "Medium", "High", "Urgent"]),
       dueDate: daysFromNow(randomBetween(-3, 21)),
-      status: pickRandom(["Open", "Open", "In Progress", "Done"]),
+      status: pickRandom(["Open", "Open", "In_Progress", "Done"]),
       assigneeId: pickRandom(ownerIds),
       createdAt: daysAgo(randomBetween(0, 30)),
       updatedAt: daysAgo(randomBetween(0, 5)),
@@ -424,4 +426,7 @@ async function seed() {
   console.log("Database seeded successfully with demo data.");
 }
 
-seed().catch(console.error);
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename)) {
+  seed().catch(console.error);
+}

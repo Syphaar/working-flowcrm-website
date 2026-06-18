@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { emitToAll } from "./socket.js";
 import prisma from "./prisma.js";
+import { seed } from "../seed.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -91,17 +92,25 @@ export async function loadDatabase(): Promise<void> {
   }
 
   if (!prismaAvailable) {
-    loadFromJson();
-    useJsonFallback = true;
-    console.warn("PostgreSQL unavailable — using JSON file as fallback");
-  } else {
-    const allEmpty = TABLE_NAMES.every(name => !cache[name] || cache[name].length === 0);
-    if (allEmpty) {
-      console.warn("Database is empty — falling back to JSON seed data");
+    if (fs.existsSync(DB_FILE)) {
       loadFromJson();
       useJsonFallback = true;
+      console.warn("PostgreSQL unavailable — using JSON file as fallback");
     } else {
-      console.log(`Loaded ${TABLE_NAMES.length} tables from database`);
+      console.log("PostgreSQL unavailable, no JSON fallback — seeding fresh data");
+      await seed();
+      useJsonFallback = true;
+      if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+      saveJsonFallback();
+    }
+  } else {
+    const hasUsers = cache["users"] && cache["users"].length > 0;
+    if (!hasUsers) {
+      console.warn("PostgreSQL is empty — seeding with comprehensive demo data (50 companies, 100 leads, etc)...");
+      await seed();
+      console.log("Database seeded and written to PostgreSQL.");
+    } else {
+      console.log(`Loaded ${TABLE_NAMES.length} tables from PostgreSQL`);
     }
   }
 
