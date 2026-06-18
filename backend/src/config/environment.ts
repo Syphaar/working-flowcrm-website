@@ -3,7 +3,13 @@ export const environment = {
   nodeEnvironment: process.env.NODE_ENV || "development",
 
   jwtSecret: process.env.JWT_SECRET || "flowcrm-dev-secret-change-in-production",
-  jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
+  jwtExpiresIn: (() => {
+    const raw = process.env.JWT_EXPIRES_IN;
+    if (!raw) return 604800;
+    const cleaned = raw.trim().replace(/^["']|["']$/g, "");
+    const num = Number(cleaned);
+    return isNaN(num) ? 604800 : num;
+  })(),
 
   clientUrl: process.env.CLIENT_URL || "http://localhost:5173",
 
