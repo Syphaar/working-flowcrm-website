@@ -68,13 +68,25 @@ function loadFromJson(): void {
 }
 
 export async function loadDatabase(): Promise<void> {
-  for (const tableName of TABLE_NAMES) {
-    const model = TABLE_TO_MODEL[tableName];
+  for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      cache[tableName] = await (prisma as any)[model].findMany();
-    } catch {
-      prismaAvailable = false;
+      await prisma.$connect();
       break;
+    } catch {
+      if (attempt < 2) await new Promise(r => setTimeout(r, 1000));
+      else { prismaAvailable = false; break; }
+    }
+  }
+
+  if (prismaAvailable) {
+    for (const tableName of TABLE_NAMES) {
+      const model = TABLE_TO_MODEL[tableName];
+      try {
+        cache[tableName] = await (prisma as any)[model].findMany();
+      } catch {
+        prismaAvailable = false;
+        break;
+      }
     }
   }
 
