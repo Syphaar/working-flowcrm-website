@@ -1,4 +1,4 @@
-import type { LeadStage } from "./Lead.js";
+import type { LeadStage, Priority } from "./Lead.js";
 
 export type DealStatus = "Open" | "Won" | "Lost";
 
@@ -10,6 +10,7 @@ export interface Deal {
   value: number;
   stage: LeadStage;
   status: DealStatus;
+  priority: Priority;
   probability: number;
   ownerId: string;
   closeDate: string;

@@ -154,7 +154,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
 
     const token = getToken();
-    const socket: Socket = io({
+    const wsUrl = import.meta.env.VITE_WS_URL || import.meta.env.VITE_API_BASE_URL || "";
+    const socket: Socket = io(wsUrl || undefined, {
       auth: { token },
     });
     socket.on("entity:updated", ({ entity, item }) => {

@@ -1,0 +1,352 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  super_admin
+  sales_executive
+  manager
+  marketing
+}
+
+enum UserStatus {
+  online
+  away
+  offline
+}
+
+enum LeadStage {
+  New_Lead
+  Contacted
+  Qualified
+  Proposal_Sent
+  Negotiation
+  Won
+  Lost
+}
+
+enum LeadStatus {
+  Active
+  Inactive
+  Converted
+  Lost
+}
+
+enum Priority {
+  Low
+  Medium
+  High
+  Urgent
+}
+
+enum CompanyStatus {
+  Active
+  Prospect
+  Inactive
+}
+
+enum CustomerStatus {
+  Active
+  Churned
+  At_Risk
+  VIP
+}
+
+enum DealStatus {
+  Open
+  Won
+  Lost
+}
+
+enum TaskStatus {
+  Open
+  In_Progress
+  Done
+}
+
+enum EventStatus {
+  Scheduled
+  Completed
+  Cancelled
+}
+
+enum Recurrence {
+  none
+  daily
+  weekly
+  monthly
+}
+
+enum NotificationType {
+  info
+  success
+  warning
+  danger
+}
+
+enum MessageChannel {
+  email
+  call
+  sms
+  internal
+}
+
+model User {
+  id              String         @id
+  name            String
+  email           String         @unique
+  password        String?
+  phone           String         @default("")
+  department      String         @default("")
+  role            UserRole
+  roles           UserRole[]
+  avatar          String?
+  status          UserStatus     @default(offline)
+  lastActive      DateTime       @default(now())
+  lastLogin       DateTime       @default(now())
+  lastLogout      DateTime       @default(now())
+  createdAt       DateTime       @default(now())
+  twoFactor       Boolean        @default(false)
+  twoFactorSecret String?
+
+  leads                    Lead[]
+  contacts                 Contact[]
+  companies                Company[]
+  customers                Customer[]
+  deals                    Deal[]
+  assignedTasks            Task[]              @relation("TaskAssignee")
+  teamGoals                TeamGoal[]
+  sentNotifications        Notification[]      @relation("NotificationSender")
+  receivedNotifications    Notification[]      @relation("NotificationRecipient")
+  sentMessages             Message[]           @relation("MessageSender")
+  receivedMessages         Message[]           @relation("MessageRecipient")
+  notes                    Note[]
+  attachments              FileAttachment[]
+  passwordResetTokens      PasswordResetToken[]
+  activities               Activity[]
+}
+
+model Lead {
+  id        String    @id
+  name      String
+  company   String
+  email     String
+  phone     String    @default("")
+  source    String    @default("")
+  stage     LeadStage @default(New_Lead)
+  status    LeadStatus @default(Active)
+  ownerId   String
+  owner     User      @relation(fields: [ownerId], references: [id])
+  value     Float     @default(0)
+  notes     String    @default("")
+  tags      String[]  @default([])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
+}
+
+model Contact {
+  id        String   @id
+  name      String
+  email     String
+  phone     String   @default("")
+  companyId String?
+  company   String   @default("")
+  title     String   @default("")
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id])
+  tags      String[] @default([])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model Company {
+  id        String        @id
+  name      String
+  industry  String        @default("")
+  website   String        @default("")
+  address   String        @default("")
+  revenue   Float         @default(0)
+  employees Int           @default(0)
+  status    CompanyStatus @default(Active)
+  ownerId   String
+  owner     User          @relation(fields: [ownerId], references: [id])
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @default(now())
+}
+
+model Customer {
+  id         String         @id
+  name       String
+  company    String         @default("")
+  email      String
+  phone      String         @default("")
+  status     CustomerStatus @default(Active)
+  totalSpend Float          @default(0)
+  ownerId    String
+  owner      User           @relation(fields: [ownerId], references: [id])
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @default(now())
+}
+
+model Deal {
+  id           String    @id
+  name         String
+  customerId   String?
+  customerName String    @default("")
+  value        Float     @default(0)
+  stage        LeadStage @default(New_Lead)
+  status       DealStatus @default(Open)
+  priority     Priority  @default(Medium)
+  probability  Int       @default(0)
+  ownerId      String
+  owner        User      @relation(fields: [ownerId], references: [id])
+  closeDate    DateTime  @default(now())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @default(now())
+}
+
+model Task {
+  id             String     @id
+  name           String
+  description    String     @default("")
+  priority       Priority   @default(Medium)
+  dueDate        DateTime   @default(now())
+  status         TaskStatus @default(Open)
+  assigneeId     String
+  assignee       User       @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  relatedToType  String?
+  relatedToId    String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @default(now())
+}
+
+model CalendarEvent {
+  id          String      @id
+  title       String
+  description String      @default("")
+  startsAt    DateTime
+  endsAt      DateTime
+  attendees   String[]    @default([])
+  recurrence  Recurrence  @default(none)
+  status      EventStatus @default(Scheduled)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @default(now())
+}
+
+model Activity {
+  id          String   @id
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  userName    String
+  role        UserRole
+  kind        String
+  entity      String?
+  entityId    String?
+  description String   @default("")
+  createdAt   DateTime @default(now())
+}
+
+model Notification {
+  id          String           @id
+  title       String
+  message     String           @default("")
+  senderId    String
+  sender      User             @relation("NotificationSender", fields: [senderId], references: [id])
+  senderName  String
+  recipientId String
+  recipient   User             @relation("NotificationRecipient", fields: [recipientId], references: [id])
+  read        Boolean          @default(false)
+  type        NotificationType @default(info)
+  createdAt   DateTime         @default(now())
+}
+
+model Note {
+  id         String   @id
+  authorId   String
+  author     User     @relation(fields: [authorId], references: [id])
+  authorName String
+  body       String
+  entity     String
+  entityId   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+}
+
+model FileAttachment {
+  id         String   @id
+  name       String
+  size       Int
+  type       String   @default("application/octet-stream")
+  entity     String
+  entityId   String
+  uploaderId String
+  uploader   User     @relation(fields: [uploaderId], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+model Message {
+  id        String         @id
+  channel   MessageChannel @default(email)
+  fromId    String
+  from      User           @relation("MessageSender", fields: [fromId], references: [id])
+  fromName  String
+  toId      String
+  to        User           @relation("MessageRecipient", fields: [toId], references: [id])
+  toName    String
+  subject   String?
+  body      String
+  createdAt DateTime       @default(now())
+}
+
+model Pipeline {
+  id          String   @id
+  name        String
+  stages      String[] @default([])
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+}
+
+model Role {
+  id          String   @id
+  name        UserRole
+  description String   @default("")
+  permissions String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+}
+
+model Permission {
+  id          String   @id
+  name        String   @unique
+  description String   @default("")
+  createdAt   DateTime @default(now())
+}
+
+model PasswordResetToken {
+  id        String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model TeamGoal {
+  id           String   @id
+  name         String
+  description  String   @default("")
+  targetValue  Float    @default(0)
+  currentValue Float    @default(0)
+  metric       String   @default("")
+  period       String   @default("")
+  ownerId      String
+  owner        User     @relation(fields: [ownerId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
+}

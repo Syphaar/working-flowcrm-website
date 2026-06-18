@@ -31,7 +31,8 @@ async function request<T>(
 ): Promise<T> {
   const token = getToken();
   const queryString = options?.params ? `?${new URLSearchParams(options.params).toString()}` : "";
-  const url = `/api${path}${queryString}`;
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
+  const url = `${baseUrl}/api${path}${queryString}`;
 
   const headers: Record<string, string> = {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),

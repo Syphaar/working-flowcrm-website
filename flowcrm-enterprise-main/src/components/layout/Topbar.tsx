@@ -55,7 +55,11 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
       <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b bg-background/80 px-3 backdrop-blur md:px-6">
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden hover:bg-[#5D52E5] hover:text-white">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden hover:bg-[#5D52E5] hover:text-white"
+            >
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
@@ -63,7 +67,12 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
             <Sidebar onNavigate={() => {}} />
           </SheetContent>
         </Sheet>
-        <Button variant="ghost" size="icon" className="hidden md:flex hover:bg-[#5D52E5] hover:text-white" onClick={onToggleSidebar}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="hidden md:flex hover:bg-[#5D52E5] hover:text-white"
+          onClick={onToggleSidebar}
+        >
           <Menu className="h-5 w-5" />
         </Button>
         <button
@@ -89,20 +98,33 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground" onClick={() => setTheme("light")}>
+            <DropdownMenuItem
+              className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground"
+              onClick={() => setTheme("light")}
+            >
               <Sun className="mr-2 h-4 w-4" /> Light
             </DropdownMenuItem>
-            <DropdownMenuItem className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground" onClick={() => setTheme("dark")}>
+            <DropdownMenuItem
+              className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground"
+              onClick={() => setTheme("dark")}
+            >
               <Moon className="mr-2 h-4 w-4" /> Dark
             </DropdownMenuItem>
-            <DropdownMenuItem className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground" onClick={() => setTheme("system")}>
+            <DropdownMenuItem
+              className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground"
+              onClick={() => setTheme("system")}
+            >
               <Monitor className="mr-2 h-4 w-4" /> System
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative hover:bg-[#5D52E5] hover:text-white">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative hover:bg-[#5D52E5] hover:text-white"
+            >
               <Bell className="h-4 w-4" />
               {unread > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
@@ -169,7 +191,10 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
               <div className="text-xs text-muted-foreground">{user?.email}</div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground" onSelect={() => navigate("/settings")}>
+            <DropdownMenuItem
+              className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground"
+              onSelect={() => navigate("/settings")}
+            >
               <UserIcon className="mr-2 h-4 w-4" /> Profile & Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />

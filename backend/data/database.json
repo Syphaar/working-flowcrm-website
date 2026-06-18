@@ -1,6 +1,24 @@
 {
   "users": [
     {
+      "id": "user_sifon",
+      "name": "Sifon Udoh",
+      "email": "sifon@gmail.com",
+      "password": "$2b$10$Vf2Xx8OO83FYq3on3pRHCOcutSd2HvwrFRcUqAVyWCvQPurI62pqu",
+      "phone": "+1 (555) 300-4000",
+      "department": "Marketing",
+      "role": "marketing",
+      "roles": [
+        "marketing"
+      ],
+      "status": "online",
+      "lastActive": "2026-06-18T12:03:51.067Z",
+      "lastLogin": "2026-06-18T12:03:51.067Z",
+      "lastLogout": "2026-06-16T12:03:37.392Z",
+      "createdAt": "2025-11-30T12:03:37.392Z",
+      "twoFactor": false
+    },
+    {
       "id": "user_1781622863187",
       "name": "test",
       "email": "test@test.com",
@@ -282,8 +300,8 @@
         "sales_executive"
       ],
       "status": "online",
-      "lastActive": "2026-06-17T23:29:14.741Z",
-      "lastLogin": "2026-06-17T23:29:14.741Z",
+      "lastActive": "2026-06-18T13:28:23.760Z",
+      "lastLogin": "2026-06-18T13:28:23.760Z",
       "lastLogout": "2026-06-12T23:16:15.925Z",
       "createdAt": "2025-08-17T23:16:15.925Z",
       "twoFactor": false
@@ -300,8 +318,8 @@
         "super_admin"
       ],
       "status": "online",
-      "lastActive": "2026-06-17T23:29:30.536Z",
-      "lastLogin": "2026-06-17T23:29:30.536Z",
+      "lastActive": "2026-06-18T12:36:05.490Z",
+      "lastLogin": "2026-06-18T12:36:05.490Z",
       "lastLogout": "2026-06-15T12:27:19.764Z",
       "createdAt": "2025-05-09T23:16:15.925Z",
       "twoFactor": false

@@ -28,8 +28,8 @@ import settingsRoutes from "./routes/settings.routes.js";
 import pipelineRoutes from "./routes/pipelines.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
 
-export function createApp() {
-  loadDatabase();
+export async function createApp() {
+  await loadDatabase();
 
   const application = express();
 
@@ -43,7 +43,6 @@ export function createApp() {
   });
 
   application.use("/api/auth", authRoutes);
-
   application.use("/api/users", authenticateUser, userRoutes);
   application.use("/api/roles", authenticateUser, roleRoutes);
   application.use("/api/permissions", authenticateUser, permissionRoutes);

@@ -5,7 +5,11 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "node --import tsx src/server.ts",
-    "seed": "tsx src/seed.ts",
+    "seed": "tsx prisma/seed.ts",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:seed": "prisma db seed",
+    "db:migrate": "prisma migrate dev",
     "test": "node --import tsx --test src/tests/*.test.ts",
     "test:auth": "node --import tsx --test src/tests/auth.test.ts",
     "test:users": "node --import tsx --test src/tests/users.test.ts",
@@ -13,7 +17,11 @@
     "test:deals": "node --import tsx --test src/tests/deals.test.ts",
     "test:tasks": "node --import tsx --test src/tests/tasks.test.ts"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "dependencies": {
+    "@prisma/client": "^6.6.0",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "express": "^5.1.0",
@@ -35,6 +43,7 @@
     "@types/nodemailer": "^6.4.17",
     "@types/speakeasy": "^2.0.10",
     "@types/uuid": "^10.0.0",
+    "prisma": "^6.6.0",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   }
