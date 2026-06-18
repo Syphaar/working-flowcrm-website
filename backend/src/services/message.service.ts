@@ -22,6 +22,19 @@ export function createMessage(messageData: any, user: any) {
   return findById<any>("communications", id);
 }
 
+export function updateMessage(id: string, updates: any) {
+  const existing = findById<any>("communications", id);
+  if (!existing) return null;
+
+  insert("communications", {
+    ...existing,
+    ...updates,
+    id,
+    updatedAt: new Date().toISOString(),
+  });
+  return findById<any>("communications", id);
+}
+
 export function deleteMessage(id: string) {
   removeById("communications", id);
   return { ok: true };

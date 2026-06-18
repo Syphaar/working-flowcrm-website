@@ -23,6 +23,19 @@ export function createActivity(activityData: any, user: any) {
   return findById<any>("activities", id);
 }
 
+export function updateActivity(id: string, updates: any) {
+  const existing = findById<any>("activities", id);
+  if (!existing) return null;
+
+  insert("activities", {
+    ...existing,
+    ...updates,
+    id,
+    updatedAt: new Date().toISOString(),
+  });
+  return findById<any>("activities", id);
+}
+
 export function deleteActivity(id: string) {
   removeById("activities", id);
   return { ok: true };

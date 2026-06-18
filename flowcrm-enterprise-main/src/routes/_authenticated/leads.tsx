@@ -32,7 +32,7 @@ import type { Lead, LeadStage, LeadStatus } from "@/lib/types";
 import Papa from "papaparse";
 
 export default function LeadsPage() {
-  const { user, isAdmin, can } = useAuth();
+  const { user, isAdmin, can, isHydrated } = useAuth();
   const { leads, users, upsert, remove, bulkRemove, log, notify } = useData();
   const navigate = useNavigate();
 
@@ -57,6 +57,16 @@ export default function LeadsPage() {
   ];
   const STATUSES: LeadStatus[] = ["Active", "Inactive", "Converted", "Lost"];
 
+  const scoped = useMemo(() => {
+    let xs = isAdmin ? leads : leads.filter((lead) => lead.ownerId === user?.id);
+    if (stageFilter !== "all") xs = xs.filter((lead) => lead.stage === stageFilter);
+    return xs;
+  }, [leads, isAdmin, user?.id, stageFilter]);
+
+  if (!isHydrated)
+    return (
+      <div className="p-8 text-center text-muted-foreground">Loading...</div>
+    );
   if (!can("view_leads"))
     return (
       <div className="p-8 text-center">
@@ -64,12 +74,6 @@ export default function LeadsPage() {
         <Link to="/dashboard" className="text-primary">Back</Link>
       </div>
     );
-
-  const scoped = useMemo(() => {
-    let xs = isAdmin ? leads : leads.filter((lead) => lead.ownerId === user?.id);
-    if (stageFilter !== "all") xs = xs.filter((lead) => lead.stage === stageFilter);
-    return xs;
-  }, [leads, isAdmin, user?.id, stageFilter]);
 
   const ownerName = (id: string) => users.find((user) => user.id === id)?.name ?? "—";
 

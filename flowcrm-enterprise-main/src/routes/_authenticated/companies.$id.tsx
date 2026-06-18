@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusPill } from "@/components/common/StatusPill";
 import { ArrowLeft, Building2, Globe, MapPin, Pencil, Plus, Trash2, Save, X } from "lucide-react";
-import { fmtCurrency, fmtNumber } from "@/lib/format";
+import { fmtCurrency, fmtDate, fmtNumber } from "@/lib/format";
 import { toast } from "sonner";
 import type { Contact } from "@/lib/types";
 
@@ -155,6 +155,10 @@ export default function CompanyDetail() {
               </div>
               <div className="mt-2 text-sm text-muted-foreground flex items-center gap-1">
                 <MapPin className="h-4 w-4" /> {company.address}
+              </div>
+              <div className="mt-3 flex gap-4 text-xs text-muted-foreground">
+                <span>Created {fmtDate(company.createdAt)}</span>
+                <span>Updated {fmtDate(company.updatedAt)}</span>
               </div>
             </div>
           </div>

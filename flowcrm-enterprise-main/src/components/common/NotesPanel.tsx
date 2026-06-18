@@ -8,13 +8,20 @@ import { toast } from "sonner";
 import { EmptyState } from "./EmptyState";
 import { StickyNote } from "lucide-react";
 
+const PAGE_SIZE = 10;
+
 export function NotesPanel({ entity, entityId }: { entity: string; entityId: string }) {
   const { notes, upsert, remove, log } = useData();
   const { user } = useAuth();
   const [body, setBody] = useState("");
-  const list = notes
+  const [page, setPage] = useState(1);
+
+  const all = notes
     .filter((note) => note.entity === entity && note.entityId === entityId)
     .sort((noteA, noteB) => +new Date(noteB.createdAt) - +new Date(noteA.createdAt));
+
+  const totalPages = Math.max(1, Math.ceil(all.length / PAGE_SIZE));
+  const list = all.slice(0, page * PAGE_SIZE);
 
   const add = () => {
     if (!body.trim() || !user) return;
@@ -57,36 +64,45 @@ export function NotesPanel({ entity, entityId }: { entity: string; entityId: str
           </Button>
         </div>
       </div>
-      {list.length === 0 ? (
+      {all.length === 0 ? (
         <EmptyState
           icon={StickyNote}
           title="No notes yet"
           description="Capture context, next steps, or anything worth remembering."
         />
       ) : (
-        <ul className="space-y-2">
-          {list.map((note) => (
-            <li key={note.id} className="rounded-lg border bg-card p-3">
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span className="font-medium text-foreground">{note.authorName}</span>
-                <span>{relTime(note.createdAt)}</span>
-              </div>
-              <div className="mt-1 text-sm whitespace-pre-wrap">{note.body}</div>
-              <div className="mt-2 flex justify-end">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    remove("notes", note.id);
-                    toast.success("Note deleted");
-                  }}
-                >
-                  Delete
-                </Button>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <div>
+          <ul className="space-y-2">
+            {list.map((note) => (
+              <li key={note.id} className="rounded-lg border bg-card p-3">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground">{note.authorName}</span>
+                  <span>{relTime(note.createdAt)}</span>
+                </div>
+                <div className="mt-1 text-sm whitespace-pre-wrap">{note.body}</div>
+                <div className="mt-2 flex justify-end">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      remove("notes", note.id);
+                      toast.success("Note deleted");
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+          {page < totalPages && (
+            <div className="mt-4 flex justify-center">
+              <Button variant="outline" size="sm" onClick={() => setPage((p) => p + 1)}>
+                Show more ({all.length - list.length} remaining)
+              </Button>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

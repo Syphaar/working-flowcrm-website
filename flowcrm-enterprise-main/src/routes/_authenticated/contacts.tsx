@@ -14,13 +14,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Users, Plus } from "lucide-react";
+import { Users, Plus, Pencil } from "lucide-react";
 import { initials, fmtDate } from "@/lib/format";
 import { toast } from "sonner";
 import type { Contact } from "@/lib/types";
 
 export default function ContactsPage() {
-  const { user, isAdmin, can } = useAuth();
+  const { user, isAdmin, can, isHydrated } = useAuth();
   const { contacts, upsert, bulkRemove, log } = useData();
   const nav = useNavigate();
 
@@ -29,7 +29,13 @@ export default function ContactsPage() {
   }, []);
 
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Contact | null>(null);
   const [form, setForm] = useState<any>({ name: "", email: "", phone: "", company: "", title: "" });
+
+  if (!isHydrated)
+    return (
+      <div className="p-8 text-center text-muted-foreground">Loading...</div>
+    );
   if (!can("view_leads"))
     return (
       <div className="p-8 text-center">
@@ -67,30 +73,79 @@ export default function ContactsPage() {
       render: (contact) => fmtDate(contact.updatedAt),
       accessor: (contact) => contact.updatedAt,
     },
+    ...(isAdmin
+      ? [
+          {
+            key: "actions" as const,
+            header: "",
+            render: (contact: Contact) => (
+              <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setEditing(contact);
+                    setForm({
+                      name: contact.name,
+                      email: contact.email,
+                      phone: contact.phone,
+                      company: contact.company,
+                      title: contact.title,
+                    });
+                    setOpen(true);
+                  }}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </div>
+            ),
+            className: "text-right",
+          },
+        ]
+      : []),
   ];
 
   const save = () => {
     if (!user) return;
-    const id = `ct_${Date.now()}`;
-    upsert("contacts", {
-      ...form,
-      id,
-      ownerId: user.id,
-      tags: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    } as Contact);
-    log({
-      userId: user.id,
-      userName: user.name,
-      role: user.role,
-      kind: "create",
-      entity: "Contact",
-      entityId: id,
-      description: `Created contact ${form.name}`,
-    });
-    toast.success("Contact created");
+    if (editing) {
+      upsert("contacts", {
+        ...editing,
+        ...form,
+        updatedAt: new Date().toISOString(),
+      } as Contact);
+      log({
+        userId: user.id,
+        userName: user.name,
+        role: user.role,
+        kind: "update",
+        entity: "Contact",
+        entityId: editing.id,
+        description: `Updated contact ${form.name}`,
+      });
+      toast.success("Contact updated");
+    } else {
+      const id = `ct_${Date.now()}`;
+      upsert("contacts", {
+        ...form,
+        id,
+        ownerId: user.id,
+        tags: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as Contact);
+      log({
+        userId: user.id,
+        userName: user.name,
+        role: user.role,
+        kind: "create",
+        entity: "Contact",
+        entityId: id,
+        description: `Created contact ${form.name}`,
+      });
+      toast.success("Contact created");
+    }
     setOpen(false);
+    setEditing(null);
     setForm({ name: "", email: "", phone: "", company: "", title: "" });
   };
 
@@ -101,7 +156,7 @@ export default function ContactsPage() {
         description="People at the companies you sell to."
         icon={Users}
         actions={
-          <Button size="sm" className="gradient-primary text-white" onClick={() => setOpen(true)}>
+          <Button size="sm" className="gradient-primary text-white" onClick={() => { setEditing(null); setForm({ name: "", email: "", phone: "", company: "", title: "" }); setOpen(true); }}>
             <Plus className="mr-2 h-4 w-4" /> New Contact
           </Button>
         }
@@ -124,10 +179,10 @@ export default function ContactsPage() {
           },
         ]}
       />
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={(v) => { if (!v) { setOpen(false); setEditing(null); setForm({ name: "", email: "", phone: "", company: "", title: "" }); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>New Contact</DialogTitle>
+            <DialogTitle>{editing ? "Edit Contact" : "New Contact"}</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-3">
             {["name", "email", "phone", "company", "title"].map((field) => (
@@ -141,11 +196,11 @@ export default function ContactsPage() {
             ))}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="outline" onClick={() => { setOpen(false); setEditing(null); setForm({ name: "", email: "", phone: "", company: "", title: "" }); }}>
               Cancel
             </Button>
             <Button onClick={save} className="gradient-primary text-white">
-              Create
+              {editing ? "Update" : "Create"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useData } from "@/context/DataContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -34,6 +34,18 @@ export default function SettingsPage() {
     phone: user?.phone ?? "",
     department: user?.department ?? "",
   });
+  const hydrated = useRef(false);
+  useEffect(() => {
+    if (user && !hydrated.current) {
+      hydrated.current = true;
+      setForm({
+        name: user.name ?? "",
+        email: user.email ?? "",
+        phone: user.phone ?? "",
+        department: user.department ?? "",
+      });
+    }
+  }, [user]);
   const [resetOpen, setResetOpen] = useState(false);
   const [twoFAOpen, setTwoFAOpen] = useState(false);
   const [twoFASetupOpen, setTwoFASetupOpen] = useState(false);

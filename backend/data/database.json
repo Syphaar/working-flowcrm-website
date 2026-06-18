@@ -6,8 +6,8 @@
       "email": "test@test.com",
       "password": "$2b$10$V0uDx7i9TrtOLZGFmS2UUuD3Id5GhNkyT78OwLZZw2osN9SBW.IU.",
       "phone": "",
-      "department": "Sales",
-      "role": "sales_executive",
+      "department": "Marketing",
+      "role": "manager",
       "roles": [
         "sales_executive"
       ],
@@ -25,13 +25,13 @@
       "password": "$2b$10$2DhvvoLjONrk.Vpb5A01ZefgnfQ9noqDlZmyGnDy6p.kfk051cVke",
       "phone": "",
       "department": "Sales ",
-      "role": "manager",
+      "role": "sales_executive",
       "roles": [
         "sales_executive"
       ],
       "status": "online",
-      "lastActive": "2026-06-17T15:22:23.131Z",
-      "lastLogin": "2026-06-17T15:22:23.131Z",
+      "lastActive": "2026-06-17T23:14:51.921Z",
+      "lastLogin": "2026-06-17T23:14:51.921Z",
       "lastLogout": "",
       "createdAt": "2026-06-13T23:32:49.505Z",
       "twoFactor": false
@@ -282,8 +282,8 @@
         "sales_executive"
       ],
       "status": "online",
-      "lastActive": "2026-06-17T15:22:33.459Z",
-      "lastLogin": "2026-06-17T15:22:33.459Z",
+      "lastActive": "2026-06-17T23:29:14.741Z",
+      "lastLogin": "2026-06-17T23:29:14.741Z",
       "lastLogout": "2026-06-12T23:16:15.925Z",
       "createdAt": "2025-08-17T23:16:15.925Z",
       "twoFactor": false
@@ -300,8 +300,8 @@
         "super_admin"
       ],
       "status": "online",
-      "lastActive": "2026-06-17T15:22:46.250Z",
-      "lastLogin": "2026-06-17T15:22:46.250Z",
+      "lastActive": "2026-06-17T23:29:30.536Z",
+      "lastLogin": "2026-06-17T23:29:30.536Z",
       "lastLogout": "2026-06-15T12:27:19.764Z",
       "createdAt": "2025-05-09T23:16:15.925Z",
       "twoFactor": false
@@ -319,7 +319,7 @@
       "status": "Active",
       "ownerId": "user_0006",
       "createdAt": "2025-04-28T23:16:15.942Z",
-      "updatedAt": "2026-06-04T23:16:15.942Z"
+      "updatedAt": "2026-06-17T16:52:44.162Z"
     },
     {
       "id": "company_0049",
@@ -4374,7 +4374,7 @@
       "totalSpend": 159614,
       "ownerId": "user_0012",
       "createdAt": "2025-07-06T23:16:16.332Z",
-      "updatedAt": "2026-06-05T23:16:16.332Z"
+      "updatedAt": "2026-06-17T16:51:46.978Z"
     },
     {
       "id": "customer_0049",
@@ -4976,9 +4976,10 @@
       "status": "Open",
       "probability": 29,
       "ownerId": "user_0013",
-      "closeDate": "2026-08-27T23:16:16.447Z",
+      "closeDate": "2026-08-27T00:00:00.000Z",
       "createdAt": "2026-03-11T23:16:16.447Z",
-      "updatedAt": "2026-06-02T23:16:16.447Z"
+      "updatedAt": "2026-06-17T23:13:32.621Z",
+      "priority": "Medium"
     },
     {
       "id": "deal_0039",
@@ -4990,9 +4991,10 @@
       "status": "Open",
       "probability": 61,
       "ownerId": "user_0012",
-      "closeDate": "2026-08-12T23:16:16.447Z",
+      "closeDate": "2026-08-12T00:00:00.000Z",
       "createdAt": "2026-03-02T23:16:16.447Z",
-      "updatedAt": "2026-06-03T23:16:16.447Z"
+      "updatedAt": "2026-06-17T16:41:52.875Z",
+      "priority": "Medium"
     },
     {
       "id": "deal_0038",
@@ -5537,7 +5539,7 @@
       "status": "Open",
       "assigneeId": "user_0004",
       "createdAt": "2026-06-10T23:16:16.731Z",
-      "updatedAt": "2026-06-10T23:16:16.731Z"
+      "updatedAt": "2026-06-17T15:54:00.080Z"
     },
     {
       "id": "task_0029",
@@ -6798,7 +6800,7 @@
       "senderName": "Aisha Rodriguez",
       "recipientId": "user_super_admin",
       "read": true,
-      "type": "info",
+      "type": "success",
       "createdAt": "2026-06-11T08:17:17.069Z",
       "updatedAt": "2026-06-16T13:50:27.609Z"
     },
@@ -7069,6 +7071,237 @@
     }
   ],
   "activities": [
+    {
+      "userId": "user_super_admin",
+      "userName": "Alex Morgan",
+      "role": "super_admin",
+      "kind": "update",
+      "entity": "Deal",
+      "entityId": "deal_0040",
+      "description": "Updated deal Cogent — Renewal",
+      "id": "activity_1781738012648_x35n6",
+      "createdAt": "2026-06-17T23:13:32.648Z"
+    },
+    {
+      "userId": "user_super_admin",
+      "userName": "Alex Morgan",
+      "role": "super_admin",
+      "kind": "update",
+      "entity": "Company",
+      "entityId": "company_0050",
+      "description": "Updated company Solstice",
+      "id": "activity_1781715164173_tle3s",
+      "createdAt": "2026-06-17T16:52:44.173Z"
+    },
+    {
+      "userId": "user_super_admin",
+      "userName": "Alex Morgan",
+      "role": "super_admin",
+      "kind": "update",
+      "entity": "Company",
+      "entityId": "company_0050",
+      "description": "Updated company Solstice",
+      "id": "activity_1781715156982_6nmdo",
+      "createdAt": "2026-06-17T16:52:36.982Z"
+    },
+    {
+      "userId": "user_super_admin",
+      "userName": "Alex Morgan",
+      "role": "super_admin",
+      "kind": "update",
+      "entity": "Customer",
+      "entityId": "customer_0050",
+      "description": "Updated customer Aria Rodriguez",
+      "id": "activity_1781715106986_lxub7",
+      "createdAt": "2026-06-17T16:51:46.986Z"
+    },
+    {
+      "userId": "user_super_admin",
+      "userName": "Alex Morgan",
+      "role": "super_admin",
+      "kind": "update",
+      "entity": "Customer",
+      "entityId": "customer_0050",
+      "description": "Updated customer Aria Rodriguez",
+      "id": "activity_1781715094495_l9klr",
+      "createdAt": "2026-06-17T16:51:34.496Z"
+    },
+    {
+      "userId": "user_super_admin",
+      "userName": "Alex Morgan",
+      "role": "super_admin",
+      "kind": "role_change",
+      "entity": "User",
+      "entityId": "user_1781393569505",
+      "description": "Updated Sifon Emmanuel details.",
+      "id": "activity_1781714689161_etdf7",
+      "createdAt": "2026-06-17T16:44:49.161Z"
+    },
+    {
+      "userId": "user_super_admin",
+      "userName": "Alex Morgan",
+      "role": "super_admin",
+      "kind": "role_change",
+      "entity": "User",
+      "entityId": "user_1781622863187",
+      "description": "Updated test details.",
+      "id": "activity_1781714666465_f9nft",
+      "createdAt": "2026-06-17T16:44:26.465Z"
+    },
+    {
+      "userId": "user_super_admin",
+      "userName": "Alex Morgan",
+      "role": "super_admin",
+      "kind": "update",
+      "entity": "Deal",
+      "entityId": "deal_0039",
+      "description": "Updated deal Northrop — Annual License",
+      "id": "activity_1781714512891_r6zun",
+      "createdAt": "2026-06-17T16:41:52.891Z"
+    },
+    {
+      "userId": "user_super_admin",
+      "userName": "Alex Morgan",
+      "role": "super_admin",
+      "kind": "update",
+      "entity": "Communication",
+      "entityId": "communication_0029",
+      "description": "Updated call to Chen Singh.",
+      "id": "activity_1781713179022_a0woy",
+      "createdAt": "2026-06-17T16:19:39.022Z"
+    },
+    {
+      "userId": "user_super_admin",
+      "userName": "Alex Morgan",
+      "role": "super_admin",
+      "kind": "update",
+      "entity": "Communication",
+      "entityId": "communication_0029",
+      "description": "Updated call to Chen Singh.",
+      "id": "activity_1781713161636_kagrv",
+      "createdAt": "2026-06-17T16:19:21.636Z"
+    },
+    {
+      "userId": "user_super_admin",
+      "userName": "Alex Morgan",
+      "role": "super_admin",
+      "kind": "update",
+      "entity": "Communication",
+      "entityId": "communication_0039",
+      "description": "Updated email to Aisha Mehta.",
+      "id": "activity_1781713133855_u4ms9",
+      "createdAt": "2026-06-17T16:18:53.855Z"
+    },
+    {
+      "userId": "user_super_admin",
+      "userName": "Alex Morgan",
+      "role": "super_admin",
+      "kind": "update",
+      "entity": "Pipeline",
+      "entityId": "pl_1781531647269",
+      "description": "Updated pipeline \"Cogent-Renewal\"",
+      "id": "activity_1781713051456_vt0qs",
+      "createdAt": "2026-06-17T16:17:31.456Z"
+    },
+    {
+      "userId": "user_super_admin",
+      "userName": "Alex Morgan",
+      "role": "super_admin",
+      "kind": "update",
+      "entity": "Customer",
+      "entityId": "customer_0050",
+      "description": "Updated customer Aria Rodriguez",
+      "id": "activity_1781712868576_5s2xw",
+      "createdAt": "2026-06-17T16:14:28.576Z"
+    },
+    {
+      "userId": "user_super_admin",
+      "userName": "Alex Morgan",
+      "role": "super_admin",
+      "kind": "update",
+      "entity": "Customer",
+      "entityId": "customer_0050",
+      "description": "Updated customer Aria Rodriguez",
+      "id": "activity_1781712859177_mscxg",
+      "createdAt": "2026-06-17T16:14:19.177Z"
+    },
+    {
+      "userId": "user_super_admin",
+      "userName": "Alex Morgan",
+      "role": "super_admin",
+      "kind": "status_change",
+      "entity": "Task",
+      "entityId": "task_0030",
+      "description": "Marked task \"Quarterly review\" as Open.",
+      "id": "activity_1781711640091_arsj9",
+      "createdAt": "2026-06-17T15:54:00.091Z"
+    },
+    {
+      "userId": "user_super_admin",
+      "userName": "Alex Morgan",
+      "role": "super_admin",
+      "kind": "complete",
+      "entity": "Task",
+      "entityId": "task_0030",
+      "description": "Marked task \"Quarterly review\" as Done.",
+      "id": "activity_1781711638822_htp84",
+      "createdAt": "2026-06-17T15:53:58.822Z"
+    },
+    {
+      "userId": "user_super_admin",
+      "userName": "Alex Morgan",
+      "role": "super_admin",
+      "kind": "create",
+      "entity": "Company",
+      "entityId": "co_1781711394946",
+      "description": "Created company Krusty Krab",
+      "id": "activity_1781711394971_6naow",
+      "createdAt": "2026-06-17T15:49:54.971Z"
+    },
+    {
+      "userId": "user_super_admin",
+      "userName": "Alex Morgan",
+      "role": "super_admin",
+      "kind": "create",
+      "entity": "Deal",
+      "entityId": "dl_1781711327581",
+      "description": "Created deal Shipping",
+      "id": "activity_1781711327599_zld2f",
+      "createdAt": "2026-06-17T15:48:47.599Z"
+    },
+    {
+      "userId": "user_super_admin",
+      "userName": "Alex Morgan",
+      "role": "super_admin",
+      "kind": "update",
+      "entity": "Pipeline",
+      "entityId": "pl_1781710482901",
+      "description": "Updated pipeline \"Krusty Krabs\"",
+      "id": "activity_1781711047682_deiot",
+      "createdAt": "2026-06-17T15:44:07.682Z"
+    },
+    {
+      "userId": "user_super_admin",
+      "userName": "Alex Morgan",
+      "role": "super_admin",
+      "kind": "create",
+      "entity": "Pipeline",
+      "entityId": "tmp_pl_1781710482861",
+      "description": "Created pipeline \"Krusty Krabs\"",
+      "id": "activity_1781710482910_oxq80",
+      "createdAt": "2026-06-17T15:34:42.910Z"
+    },
+    {
+      "userId": "user_super_admin",
+      "userName": "Alex Morgan",
+      "role": "super_admin",
+      "kind": "create",
+      "entity": "Pipeline",
+      "entityId": "pl_1781710152098",
+      "description": "Created pipeline \"Krusty Krabs\"",
+      "id": "activity_1781710152105_dgtl4",
+      "createdAt": "2026-06-17T15:29:12.105Z"
+    },
     {
       "userId": "user_super_admin",
       "userName": "Alex Morgan",
@@ -9990,17 +10223,6 @@
       "createdAt": "2026-06-11T12:34:18.757Z"
     },
     {
-      "id": "communication_0057",
-      "channel": "call",
-      "fromId": "user_0005",
-      "fromName": "Nora Ng",
-      "toId": "user_0008",
-      "toName": "Aisha Rodriguez",
-      "subject": "Pricing discussion",
-      "body": "Auto-generated communication body. All systems nominal.",
-      "createdAt": "2026-06-13T22:14:18.751Z"
-    },
-    {
       "id": "communication_0056",
       "channel": "internal",
       "fromId": "user_sales_executive",
@@ -10644,7 +10866,8 @@
       "permissions": [
         "view_leads",
         "manage_customers",
-        "manage_deals"
+        "manage_deals",
+        "edit_leads"
       ]
     },
     {
@@ -10682,19 +10905,24 @@
   ],
   "pipelines": [
     {
-      "name": "Sales Pipeline",
+      "name": "Krusty Krabs",
       "stages": [
-        "New Lead",
-        "Contacted",
-        "Qualified",
-        "Proposal Sent",
-        "Negotiation",
-        "Closed Won",
-        "Closed Lost"
+        "New Lead"
+      ],
+      "description": "water",
+      "createdAt": "2026-06-17T15:34:42.901Z",
+      "updatedAt": "2026-06-17T15:44:07.675Z",
+      "id": "pl_1781710482901"
+    },
+    {
+      "name": "Cogent-Renewal",
+      "stages": [
+        "New Lead"
       ],
       "id": "pl_1781531647269",
       "createdAt": "2026-06-15T13:54:07.269Z",
-      "updatedAt": "2026-06-15T13:54:07.269Z"
+      "updatedAt": "2026-06-17T16:17:31.445Z",
+      "description": ""
     }
   ]
 }

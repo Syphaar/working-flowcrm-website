@@ -25,6 +25,18 @@ export function deleteMessage(request: Request, response: Response) {
   response.json({ ok: true });
 }
 
+export function updateMessage(request: Request, response: Response) {
+  const message = messageService.updateMessage(
+    request.params.id as string,
+    request.body
+  );
+  if (!message) {
+    response.status(404).json({ error: "Message not found" });
+    return;
+  }
+  response.json(message);
+}
+
 export function bulkDeleteMessages(request: Request, response: Response) {
   messageService.bulkDeleteMessages(request.body.ids || []);
   response.json({ ok: true });

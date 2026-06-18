@@ -249,6 +249,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         const newEntry = {
           ...entry,
           id: id || createItemId(),
+          createdAt: (entry.createdAt as string) || new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
         const index = arr.findIndex((item) => item.id === newEntry.id);

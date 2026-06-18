@@ -12,10 +12,14 @@ import type { Activity } from "@/lib/types";
 
 export default function AuditPage() {
   const { activities, bulkRemove } = useData();
-  const { can, isAdmin } = useAuth();
+  const { can, isAdmin, isHydrated } = useAuth();
   useEffect(() => {
     document.title = "Audit Log — FlowCRM";
   }, []);
+  if (!isHydrated)
+    return (
+      <div className="p-8 text-center text-muted-foreground">Loading...</div>
+    );
   if (!can("view_audit"))
     return (
       <div className="p-8 text-center">

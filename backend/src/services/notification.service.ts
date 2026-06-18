@@ -1,6 +1,10 @@
 import { getAll, findById, insert, removeById, bulkRemoveByIds } from "../config/database.js";
 import { emitToUser } from "../config/socket.js";
 
+export function getNotificationById(id: string) {
+  return findById<any>("notifications", id);
+}
+
 export function getNotifications(userId: string, isAdmin: boolean) {
   let notifications = getAll<any>("notifications");
   if (!isAdmin) {

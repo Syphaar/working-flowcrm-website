@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { StatusPill } from "@/components/common/StatusPill";
-import { UsersRound, Plus, Search } from "lucide-react";
+import { UsersRound, Plus, Search, Pencil } from "lucide-react";
 import { fmtCurrency, fmtDate, initials } from "@/lib/format";
 import { toast } from "sonner";
 import type { Customer } from "@/lib/types";
@@ -29,7 +29,7 @@ import { Label } from "@/components/ui/label";
 
 export default function CustomersPage() {
   const { customers, upsert, bulkRemove, log } = useData();
-  const { user, isAdmin, can } = useAuth();
+  const { user, isAdmin, can, isHydrated } = useAuth();
   const nav = useNavigate();
 
   useEffect(() => {
@@ -39,15 +39,8 @@ export default function CustomersPage() {
   const [status, setStatus] = useState("all");
   const [secondary, setSecondary] = useState("");
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<any>({ name: "", company: "", email: "", phone: "" });
-
-  if (!can("manage_customers"))
-    return (
-      <div className="p-8 text-center">
-        <p>Access denied.</p>
-        <Link to="/dashboard" className="text-primary">Back</Link>
-      </div>
-    );
+  const [editing, setEditing] = useState<Customer | null>(null);
+  const [form, setForm] = useState<any>({ name: "", company: "", email: "", phone: "", status: "Active" });
 
   const base = isAdmin ? customers : customers.filter((customer) => customer.ownerId === user?.id);
   const filtered = useMemo(
@@ -62,6 +55,18 @@ export default function CustomersPage() {
       ),
     [base, status, secondary],
   );
+
+  if (!isHydrated)
+    return (
+      <div className="p-8 text-center text-muted-foreground">Loading...</div>
+    );
+  if (!can("manage_customers"))
+    return (
+      <div className="p-8 text-center">
+        <p>Access denied.</p>
+        <Link to="/dashboard" className="text-primary">Back</Link>
+      </div>
+    );
 
   const cols: Column<Customer>[] = [
     {
@@ -100,31 +105,81 @@ export default function CustomersPage() {
       render: (customer) => fmtDate(customer.updatedAt),
       accessor: (customer) => customer.updatedAt,
     },
+    ...(isAdmin
+      ? [
+          {
+            key: "actions" as const,
+            header: "",
+            render: (customer: Customer) => (
+              <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setEditing(customer);
+                    setForm({
+                      name: customer.name,
+                      company: customer.company,
+                      email: customer.email,
+                      phone: customer.phone,
+                      status: customer.status,
+                    });
+                    setOpen(true);
+                  }}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </div>
+            ),
+            className: "text-right",
+          },
+        ]
+      : []),
   ];
 
   const save = () => {
     if (!user) return;
-    const id = `cu_${Date.now()}`;
-    upsert("customers", {
-      ...form,
-      id,
-      status: "Active",
-      totalSpend: 0,
-      ownerId: user.id,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    } as Customer);
-    log({
-      userId: user.id,
-      userName: user.name,
-      role: user.role,
-      kind: "create",
-      entity: "Customer",
-      entityId: id,
-      description: `Created customer ${form.name}`,
-    });
-    toast.success("Customer created");
+    if (editing) {
+      upsert("customers", {
+        ...editing,
+        ...form,
+        updatedAt: new Date().toISOString(),
+      } as Customer);
+      log({
+        userId: user.id,
+        userName: user.name,
+        role: user.role,
+        kind: "update",
+        entity: "Customer",
+        entityId: editing.id,
+        description: `Updated customer ${form.name}`,
+      });
+      toast.success("Customer updated");
+    } else {
+      const id = `cu_${Date.now()}`;
+      upsert("customers", {
+        ...form,
+        id,
+        status: "Active",
+        totalSpend: 0,
+        ownerId: user.id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as Customer);
+      log({
+        userId: user.id,
+        userName: user.name,
+        role: user.role,
+        kind: "create",
+        entity: "Customer",
+        entityId: id,
+        description: `Created customer ${form.name}`,
+      });
+      toast.success("Customer created");
+    }
     setOpen(false);
+    setEditing(null);
+    setForm({ name: "", company: "", email: "", phone: "", status: "Active" });
   };
 
   return (
@@ -134,7 +189,7 @@ export default function CustomersPage() {
         description="Active accounts driving revenue."
         icon={UsersRound}
         actions={
-          <Button size="sm" className="gradient-primary text-white" onClick={() => setOpen(true)}>
+          <Button size="sm" className="gradient-primary text-white" onClick={() => { setEditing(null); setForm({ name: "", company: "", email: "", phone: "", status: "Active" }); setOpen(true); }}>
             <Plus className="mr-2 h-4 w-4" /> New Customer
           </Button>
         }
@@ -183,10 +238,10 @@ export default function CustomersPage() {
           },
         ]}
       />
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={(v) => { if (!v) { setOpen(false); setEditing(null); setForm({ name: "", company: "", email: "", phone: "", status: "Active" }); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>New Customer</DialogTitle>
+            <DialogTitle>{editing ? "Edit Customer" : "New Customer"}</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-3">
             {["name", "company", "email", "phone"].map((field) => (
@@ -198,13 +253,31 @@ export default function CustomersPage() {
                 />
               </div>
             ))}
+            <div>
+              <Label>Status</Label>
+              <Select
+                value={form.status}
+                onValueChange={(value) => setForm({ ...form, status: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(["Active", "VIP", "At Risk", "Churned"] as const).map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="outline" onClick={() => { setOpen(false); setEditing(null); setForm({ name: "", company: "", email: "", phone: "", status: "Active" }); }}>
               Cancel
             </Button>
             <Button onClick={save} className="gradient-primary text-white">
-              Create
+              {editing ? "Update" : "Create"}
             </Button>
           </DialogFooter>
         </DialogContent>

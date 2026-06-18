@@ -66,6 +66,14 @@ export default function DealDetail() {
                   <div className="text-xs text-muted-foreground">Close Date</div>
                   <div className="font-semibold">{fmtDate(deal.closeDate)}</div>
                 </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Created</div>
+                  <div className="font-semibold">{fmtDate(deal.createdAt)}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Updated</div>
+                  <div className="font-semibold">{fmtDate(deal.updatedAt)}</div>
+                </div>
               </div>
             </div>
           </div>

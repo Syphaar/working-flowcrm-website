@@ -81,6 +81,10 @@ export default function LeadDetail() {
                   <div className="text-xs text-muted-foreground">Created</div>
                   <div className="font-semibold">{fmtDate(lead.createdAt)}</div>
                 </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Updated</div>
+                  <div className="font-semibold">{fmtDate(lead.updatedAt)}</div>
+                </div>
               </div>
             </div>
           </CardContent>

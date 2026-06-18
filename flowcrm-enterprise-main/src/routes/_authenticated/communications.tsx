@@ -30,7 +30,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { MessageSquare, Mail, Phone, Send, Plus, Trash2 } from "lucide-react";
+import { MessageSquare, Mail, Phone, Send, Plus, Trash2, Pencil } from "lucide-react";
 import { fmtDateTime, initials } from "@/lib/format";
 import { toast } from "sonner";
 
@@ -39,6 +39,7 @@ export default function CommunicationsPage() {
   const { user, isAdmin } = useAuth();
   const [tab, setTab] = useState<"all" | "email" | "call" | "sms" | "internal">("all");
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
   const [page, setPage] = useState(1);
   const pageSize = 10;
   const [form, setForm] = useState<any>({ channel: "email", toId: "", subject: "", body: "" });
@@ -53,29 +54,48 @@ export default function CommunicationsPage() {
   const pageCount = Math.max(1, Math.ceil(list.length / pageSize));
   const slice = list.slice((page - 1) * pageSize, page * pageSize);
   const send = () => {
-    const to = users.find((user) => user.id === form.toId);
+    const to = editing ? users.find((u) => u.id === editing.toId) : users.find((user) => user.id === form.toId);
     if (!to || !user) return;
-    const id = `cm_${Date.now()}`;
-    upsert("communications", {
-      id,
-      channel: form.channel,
-      fromId: user.id,
-      fromName: user.name,
-      toId: to.id,
-      toName: to.name,
-      subject: form.subject,
-      body: form.body,
-      createdAt: new Date().toISOString(),
-    });
-    log({
-      userId: user.id,
-      userName: user.name,
-      role: user.role,
-      kind: "notification",
-      description: `Sent ${form.channel} to ${to.name}.`,
-    });
-    toast.success("Message sent");
+    if (editing) {
+      upsert("communications", {
+        ...editing,
+        subject: form.subject,
+        body: form.body,
+      });
+      log({
+        userId: user.id,
+        userName: user.name,
+        role: user.role,
+        kind: "update",
+        entity: "Communication",
+        entityId: editing.id,
+        description: `Updated ${form.channel} to ${to.name}.`,
+      });
+      toast.success("Communication updated");
+    } else {
+      const id = `cm_${Date.now()}`;
+      upsert("communications", {
+        id,
+        channel: form.channel,
+        fromId: user.id,
+        fromName: user.name,
+        toId: to.id,
+        toName: to.name,
+        subject: form.subject,
+        body: form.body,
+        createdAt: new Date().toISOString(),
+      });
+      log({
+        userId: user.id,
+        userName: user.name,
+        role: user.role,
+        kind: "notification",
+        description: `Sent ${form.channel} to ${to.name}.`,
+      });
+      toast.success("Message sent");
+    }
     setOpen(false);
+    setEditing(null);
     setForm({ channel: "email", toId: "", subject: "", body: "" });
   };
 
@@ -133,16 +153,34 @@ export default function CommunicationsPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       {isAdmin && (
-                        <button
-                          onClick={() => {
-                            bulkRemove("communications", [comm.id]);
-                            toast.success("Communication deleted");
-                          }}
-                          className="text-muted-foreground hover:text-destructive transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <>
+                          <button
+                            onClick={() => {
+                              setEditing(comm);
+                              setForm({
+                                channel: comm.channel,
+                                toId: comm.toId,
+                                subject: comm.subject || "",
+                                body: comm.body,
+                              });
+                              setOpen(true);
+                            }}
+                            className="text-muted-foreground hover:text-primary transition-colors"
+                            title="Edit"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              bulkRemove("communications", [comm.id]);
+                              toast.success("Communication deleted");
+                            }}
+                            className="text-muted-foreground hover:text-destructive transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </>
                       )}
                       <div className="text-xs text-muted-foreground">
                         {fmtDateTime(comm.createdAt)}
@@ -205,10 +243,10 @@ export default function CommunicationsPage() {
           </PaginationContent>
         </Pagination>
       </div>
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={(v) => { if (!v) { setOpen(false); setEditing(null); setForm({ channel: "email", toId: "", subject: "", body: "" }); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Compose Message</DialogTitle>
+            <DialogTitle>{editing ? "Edit Communication" : "Compose Message"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
@@ -266,11 +304,11 @@ export default function CommunicationsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="outline" onClick={() => { setOpen(false); setEditing(null); setForm({ channel: "email", toId: "", subject: "", body: "" }); }}>
               Cancel
             </Button>
             <Button onClick={send} className="gradient-primary text-white">
-              <Send className="mr-2 h-4 w-4" /> Send
+              <Send className="mr-2 h-4 w-4" /> {editing ? "Update" : "Send"}
             </Button>
           </DialogFooter>
         </DialogContent>

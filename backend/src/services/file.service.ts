@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "fs";
-import { getAll, findById, insert, removeById } from "../config/database.js";
+import { getAll, findById, insert, removeById, bulkRemoveByIds } from "../config/database.js";
 import { uploadsPath } from "../config/storage.js";
 
 export function getAttachments(entity?: string, entityId?: string) {
@@ -12,6 +12,10 @@ export function getAttachments(entity?: string, entityId?: string) {
     );
   }
   return attachments;
+}
+
+export function getAttachmentById(id: string) {
+  return findById<any>("attachments", id);
 }
 
 export function createAttachment(file: Express.Multer.File, body: any, userId: string) {
@@ -31,6 +35,33 @@ export function createAttachment(file: Express.Multer.File, body: any, userId: s
   return findById<any>("attachments", id);
 }
 
+export function createAttachmentFromData(data: any, userId: string) {
+  const id = `attachment_${Date.now()}`;
+  const now = new Date().toISOString();
+  const newAttachment = {
+    ...data,
+    id,
+    uploaderId: userId,
+    createdAt: now,
+    updatedAt: now,
+  };
+  insert("attachments", newAttachment);
+  return findById<any>("attachments", id);
+}
+
+export function updateAttachment(id: string, updates: any) {
+  const existing = findById<any>("attachments", id);
+  if (!existing) return null;
+
+  insert("attachments", {
+    ...existing,
+    ...updates,
+    id,
+    updatedAt: new Date().toISOString(),
+  });
+  return findById<any>("attachments", id);
+}
+
 export function deleteAttachment(id: string) {
   const attachment = findById<any>("attachments", id);
   if (attachment) {
@@ -40,5 +71,19 @@ export function deleteAttachment(id: string) {
     }
   }
   removeById("attachments", id);
+  return { ok: true };
+}
+
+export function bulkDeleteAttachments(ids: string[]) {
+  for (const id of ids) {
+    const attachment = findById<any>("attachments", id);
+    if (attachment) {
+      const filePath = path.join(uploadsPath, attachment.name);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+  }
+  bulkRemoveByIds("attachments", ids);
   return { ok: true };
 }

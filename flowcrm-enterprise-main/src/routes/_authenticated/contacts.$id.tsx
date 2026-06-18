@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NotesPanel } from "@/components/common/NotesPanel";
 import { AttachmentsPanel } from "@/components/common/AttachmentsPanel";
 import { Timeline } from "@/components/common/Timeline";
-import { initials } from "@/lib/format";
+import { fmtDate, initials } from "@/lib/format";
 import { ArrowLeft, Mail, Phone, Building2 } from "lucide-react";
 
 export default function ContactDetail() {
@@ -54,6 +54,10 @@ export default function ContactDetail() {
               </div>
               <div className="flex items-center gap-2">
                 <Building2 className="h-4 w-4 text-muted-foreground" /> {contact.company}
+              </div>
+              <div className="pt-3 mt-3 border-t text-xs text-muted-foreground space-y-1">
+                <div>Created {fmtDate(contact.createdAt)}</div>
+                <div>Updated {fmtDate(contact.updatedAt)}</div>
               </div>
             </div>
           </CardContent>

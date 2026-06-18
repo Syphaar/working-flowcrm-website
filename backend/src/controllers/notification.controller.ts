@@ -11,6 +11,17 @@ export function getNotifications(request: Request, response: Response) {
   response.json(notifications);
 }
 
+export function getNotificationById(request: Request, response: Response) {
+  const notification = notificationService.getNotificationById(
+    request.params.id as string
+  );
+  if (!notification) {
+    response.status(404).json({ error: "Notification not found" });
+    return;
+  }
+  response.json(notification);
+}
+
 export function createNotification(request: Request, response: Response) {
   const notification = notificationService.createNotification(
     request.body,

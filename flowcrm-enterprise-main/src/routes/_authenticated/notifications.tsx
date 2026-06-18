@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { useData } from "@/context/DataContext";
 import { useAuth } from "@/context/AuthContext";
 import { PageHeader } from "@/components/common/PageHeader";
-import { Bell, Plus, Check, Trash2 } from "lucide-react";
+import { Bell, Plus, Check, Trash2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +41,7 @@ export default function NotificationsPage() {
   const { user, isAdmin, can } = useAuth();
   const [searchParams] = useSearchParams();
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
   const [form, setForm] = useState<any>({
     title: "",
     message: "",
@@ -75,19 +76,30 @@ export default function NotificationsPage() {
     upsert("notifications", { ...notification, read });
   };
   const send = () => {
-    const targets = form.recipientId === "all" ? users.map((user) => user.id) : [form.recipientId];
-    targets.forEach((rid) =>
-      notify({
+    if (editing) {
+      upsert("notifications", {
+        ...editing,
         title: form.title,
         message: form.message,
-        senderId: user!.id,
-        senderName: user!.name,
-        recipientId: rid,
         type: form.type,
-      }),
-    );
-    toast.success(`Sent to ${targets.length} recipient(s)`);
+      });
+      toast.success("Notification updated");
+    } else {
+      const targets = form.recipientId === "all" ? users.map((user) => user.id) : [form.recipientId];
+      targets.forEach((rid) =>
+        notify({
+          title: form.title,
+          message: form.message,
+          senderId: user!.id,
+          senderName: user!.name,
+          recipientId: rid,
+          type: form.type,
+        }),
+      );
+      toast.success(`Sent to ${targets.length} recipient(s)`);
+    }
     setOpen(false);
+    setEditing(null);
     setForm({ title: "", message: "", recipientId: "all", type: "info" });
   };
 
@@ -152,6 +164,24 @@ export default function NotificationsPage() {
                 </div>
               </div>
               <div className="flex gap-1">
+                {(isAdmin || notification.senderId === user?.id) && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => {
+                      setEditing(notification);
+                      setForm({
+                        title: notification.title,
+                        message: notification.message,
+                        recipientId: notification.senderId,
+                        type: notification.type,
+                      });
+                      setOpen(true);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                )}
                 <Button
                   size="icon"
                   variant="ghost"
@@ -220,10 +250,10 @@ export default function NotificationsPage() {
           </PaginationContent>
         </Pagination>
       </div>
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={(v) => { if (!v) { setOpen(false); setEditing(null); setForm({ title: "", message: "", recipientId: "all", type: "info" }); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Send Notification</DialogTitle>
+            <DialogTitle>{editing ? "Edit Notification" : "Send Notification"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
@@ -242,25 +272,27 @@ export default function NotificationsPage() {
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Recipient</Label>
-                <Select
-                  value={form.recipientId}
-                  onValueChange={(value) => setForm({ ...form, recipientId: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All users (broadcast)</SelectItem>
-                    {users.map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {!editing && (
+                <div>
+                  <Label>Recipient</Label>
+                  <Select
+                    value={form.recipientId}
+                    onValueChange={(value) => setForm({ ...form, recipientId: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All users (broadcast)</SelectItem>
+                      {users.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div>
                 <Label>Type</Label>
                 <Select
@@ -282,11 +314,11 @@ export default function NotificationsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="outline" onClick={() => { setOpen(false); setEditing(null); setForm({ title: "", message: "", recipientId: "all", type: "info" }); }}>
               Cancel
             </Button>
             <Button onClick={send} className="gradient-primary text-white">
-              Send
+              {editing ? "Update" : "Send"}
             </Button>
           </DialogFooter>
         </DialogContent>

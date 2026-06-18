@@ -14,10 +14,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { StatusPill } from "@/components/common/StatusPill";
-import { Briefcase, Plus, Search } from "lucide-react";
+import { Briefcase, Plus, Search, Pencil } from "lucide-react";
 import { fmtCurrency, fmtDate } from "@/lib/format";
 import { toast } from "sonner";
-import type { Deal, LeadStage } from "@/lib/types";
+import type { Deal, LeadStage, Priority } from "@/lib/types";
 import {
   Dialog,
   DialogContent,
@@ -39,7 +39,7 @@ const STAGES: LeadStage[] = [
 
 export default function DealsPage() {
   const { deals, customers, upsert, bulkRemove, log } = useData();
-  const { user, isAdmin, can } = useAuth();
+  const { user, isAdmin, can, isHydrated } = useAuth();
   const nav = useNavigate();
 
   useEffect(() => {
@@ -49,21 +49,32 @@ export default function DealsPage() {
   const [stage, setStage] = useState("all");
   const [secondary, setSecondary] = useState("");
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Deal | null>(null);
   const [form, setForm] = useState<any>({
     name: "",
     customerName: "",
     value: 0,
     stage: "New Lead",
+    status: "Open",
+    priority: "Medium",
     probability: 50,
+    closeDate: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
   });
 
-  if (!can("manage_deals"))
-    return (
-      <div className="p-8 text-center">
-        <p>Access denied.</p>
-        <Link to="/dashboard" className="text-primary">Back</Link>
-      </div>
-    );
+  const closeDialog = () => {
+    setOpen(false);
+    setEditing(null);
+    setForm({
+      name: "",
+      customerName: "",
+      value: 0,
+      stage: "New Lead",
+      status: "Open",
+      priority: "Medium",
+      probability: 50,
+      closeDate: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
+    });
+  };
 
   const base = isAdmin ? deals : deals.filter((deal) => deal.ownerId === user?.id);
   const filtered = useMemo(
@@ -72,12 +83,24 @@ export default function DealsPage() {
         (deal) =>
           (stage === "all" || deal.stage === stage) &&
           (!secondary ||
-            (deal.stage + deal.status + fmtDate(deal.closeDate))
+            (deal.stage + deal.status + deal.priority + fmtDate(deal.closeDate))
               .toLowerCase()
               .includes(secondary.toLowerCase())),
       ),
     [base, stage, secondary],
   );
+
+  if (!isHydrated)
+    return (
+      <div className="p-8 text-center text-muted-foreground">Loading...</div>
+    );
+  if (!can("manage_deals"))
+    return (
+      <div className="p-8 text-center">
+        <p>Access denied.</p>
+        <Link to="/dashboard" className="text-primary">Back</Link>
+      </div>
+    );
 
   const cols: Column<Deal>[] = [
     {
@@ -114,33 +137,94 @@ export default function DealsPage() {
       render: (deal) => fmtDate(deal.closeDate),
       accessor: (deal) => deal.closeDate,
     },
+    {
+      key: "priority",
+      header: "Priority",
+      render: (deal) => <StatusPill value={deal.priority} />,
+    },
+    ...(isAdmin
+      ? [
+          {
+            key: "actions" as const,
+            header: "" as const,
+            render: (deal: Deal) => (
+              <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => {
+                    setEditing(deal);
+                    setForm({
+                      name: deal.name,
+                      customerName: deal.customerName,
+                      value: deal.value,
+                      stage: deal.stage,
+                      status: deal.status,
+                      priority: deal.priority || "Medium",
+                      probability: deal.probability,
+                      closeDate: deal.closeDate.slice(0, 10),
+                    });
+                    setOpen(true);
+                  }}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </div>
+            ),
+          },
+        ]
+      : []),
   ];
 
   const save = () => {
     if (!user) return;
-    const id = `dl_${Date.now()}`;
-    upsert("deals", {
-      ...form,
-      id,
-      status: "Open",
-      ownerId: user.id,
-      value: Number(form.value),
-      probability: Number(form.probability),
-      closeDate: new Date(Date.now() + 30 * 86400000).toISOString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    } as Deal);
-    log({
-      userId: user.id,
-      userName: user.name,
-      role: user.role,
-      kind: "create",
-      entity: "Deal",
-      entityId: id,
-      description: `Created deal ${form.name}`,
-    });
-    toast.success("Deal created");
-    setOpen(false);
+    if (editing) {
+      upsert("deals", {
+        ...editing,
+        name: form.name,
+        customerName: form.customerName,
+        value: Number(form.value),
+        stage: form.stage,
+        status: form.status,
+        priority: form.priority,
+        probability: Number(form.probability),
+        closeDate: new Date(form.closeDate).toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as Deal);
+      log({
+        userId: user.id,
+        userName: user.name,
+        role: user.role,
+        kind: "update",
+        entity: "Deal",
+        entityId: editing.id,
+        description: `Updated deal ${form.name}`,
+      });
+      toast.success("Deal updated");
+    } else {
+      const id = `dl_${Date.now()}`;
+      upsert("deals", {
+        ...form,
+        id,
+        ownerId: user.id,
+        value: Number(form.value),
+        probability: Number(form.probability),
+        closeDate: new Date(form.closeDate).toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as Deal);
+      log({
+        userId: user.id,
+        userName: user.name,
+        role: user.role,
+        kind: "create",
+        entity: "Deal",
+        entityId: id,
+        description: `Created deal ${form.name}`,
+      });
+      toast.success("Deal created");
+    }
+    closeDialog();
   };
 
   return (
@@ -159,7 +243,7 @@ export default function DealsPage() {
         data={filtered}
         columns={cols}
         searchPlaceholder="Search deals, customers…"
-        searchKeys={["name", "customerName", "stage", "status"]}
+        searchKeys={["name", "customerName", "stage", "status", "priority"]}
         exportName="deals"
         onRowClick={(deal) => nav("/deals/" + deal.id)}
         filters={
@@ -199,10 +283,10 @@ export default function DealsPage() {
           },
         ]}
       />
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={(v) => { if (!v) closeDialog(); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>New Deal</DialogTitle>
+            <DialogTitle>{editing ? "Edit Deal" : "New Deal"}</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
@@ -246,7 +330,7 @@ export default function DealsPage() {
                 onChange={(e) => setForm({ ...form, probability: e.target.value })}
               />
             </div>
-            <div className="col-span-2">
+            <div>
               <Label>Stage</Label>
               <Select
                 value={form.stage}
@@ -264,13 +348,57 @@ export default function DealsPage() {
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <Label>Status</Label>
+              <Select
+                value={form.status}
+                onValueChange={(value) => setForm({ ...form, status: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(["Open", "Won", "Lost"] as const).map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Priority</Label>
+              <Select
+                value={form.priority}
+                onValueChange={(value) => setForm({ ...form, priority: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(["Low", "Medium", "High", "Urgent"] as Priority[]).map((priority) => (
+                    <SelectItem key={priority} value={priority}>
+                      {priority}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Close date</Label>
+              <Input
+                type="date"
+                value={form.closeDate}
+                onChange={(e) => setForm({ ...form, closeDate: e.target.value })}
+              />
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="outline" onClick={closeDialog}>
               Cancel
             </Button>
             <Button onClick={save} className="gradient-primary text-white">
-              Create
+              {editing ? "Update" : "Create"}
             </Button>
           </DialogFooter>
         </DialogContent>

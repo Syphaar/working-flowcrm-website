@@ -36,7 +36,7 @@ function initMatrix(roleNames: string[]): Record<string, Permission[]> {
 }
 
 export default function RolesPage() {
-  const { can } = useAuth();
+  const { can, isHydrated } = useAuth();
   const { roles, setAll } = useData();
   useEffect(() => {
     document.title = "Roles — FlowCRM";
@@ -211,6 +211,10 @@ export default function RolesPage() {
     }
   };
 
+  if (!isHydrated)
+    return (
+      <div className="p-8 text-center text-muted-foreground">Loading...</div>
+    );
   if (!can("manage_roles"))
     return (
       <div className="p-8 text-center">

@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NotesPanel } from "@/components/common/NotesPanel";
 import { AttachmentsPanel } from "@/components/common/AttachmentsPanel";
 import { Timeline } from "@/components/common/Timeline";
-import { initials, fmtCurrency } from "@/lib/format";
+import { fmtDate, initials, fmtCurrency } from "@/lib/format";
 import { ArrowLeft, Mail, Phone, Building2 } from "lucide-react";
 
 export default function CustomerDetail() {
@@ -60,6 +60,10 @@ export default function CustomerDetail() {
               <div className="rounded-lg bg-muted/40 p-3">
                 <div className="text-xs text-muted-foreground">Total Spend</div>
                 <div className="text-lg font-bold">{fmtCurrency(customer.totalSpend)}</div>
+              </div>
+              <div className="pt-3 mt-3 border-t text-xs text-muted-foreground space-y-1">
+                <div>Created {fmtDate(customer.createdAt)}</div>
+                <div>Updated {fmtDate(customer.updatedAt)}</div>
               </div>
             </div>
           </CardContent>

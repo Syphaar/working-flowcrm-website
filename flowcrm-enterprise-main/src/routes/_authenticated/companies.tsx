@@ -7,8 +7,8 @@ import { DataTable, type Column } from "@/components/common/DataTable";
 import { StatusPill } from "@/components/common/StatusPill";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Building2, Plus, ArrowLeft } from "lucide-react";
-import { fmtCurrency, fmtNumber } from "@/lib/format";
+import { Building2, Plus, ArrowLeft, Pencil } from "lucide-react";
+import { fmtCurrency, fmtDate, fmtNumber } from "@/lib/format";
 import {
   Dialog,
   DialogContent,
@@ -18,27 +18,27 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import type { Company } from "@/lib/types";
 
 export default function CompaniesPage() {
   const { companies, upsert, bulkRemove, log } = useData();
-  const { user, can } = useAuth();
+  const { user, can, isAdmin, isHydrated } = useAuth();
   const nav = useNavigate();
 
   useEffect(() => {
     document.title = "Companies — FlowCRM";
   }, []);
 
-  if (!can("view_leads"))
-    return (
-      <div className="p-8 text-center">
-        <p>Access denied.</p>
-        <Link to="/dashboard" className="text-primary">Back</Link>
-      </div>
-    );
-
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Company | null>(null);
   const [form, setForm] = useState<any>({
     name: "",
     industry: "Software",
@@ -46,7 +46,20 @@ export default function CompaniesPage() {
     address: "",
     revenue: 0,
     employees: 0,
+    status: "Prospect",
   });
+
+  if (!isHydrated)
+    return (
+      <div className="p-8 text-center text-muted-foreground">Loading...</div>
+    );
+  if (!can("view_leads"))
+    return (
+      <div className="p-8 text-center">
+        <p>Access denied.</p>
+        <Link to="/dashboard" className="text-primary">Back</Link>
+      </div>
+    );
 
   const cols: Column<Company>[] = [
     {
@@ -81,30 +94,88 @@ export default function CompaniesPage() {
       accessor: (company) => company.revenue,
     },
     { key: "status", header: "Status", render: (company) => <StatusPill value={company.status} /> },
+    {
+      key: "updatedAt",
+      header: "Updated",
+      sortable: true,
+      render: (company) => fmtDate(company.updatedAt),
+      accessor: (company) => company.updatedAt,
+    },
+    ...(isAdmin
+      ? [
+          {
+            key: "actions" as const,
+            header: "",
+            render: (company: Company) => (
+              <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setEditing(company);
+                    setForm({
+                      name: company.name,
+                      industry: company.industry,
+                      website: company.website,
+                      address: company.address,
+                      revenue: company.revenue,
+                      employees: company.employees,
+                      status: company.status,
+                    });
+                    setOpen(true);
+                  }}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </div>
+            ),
+            className: "text-right",
+          },
+        ]
+      : []),
   ];
 
   const save = () => {
     if (!user) return;
-    const id = `co_${Date.now()}`;
-    upsert("companies", {
-      ...form,
-      id,
-      status: "Prospect",
-      ownerId: user.id,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    } as Company);
-    log({
-      userId: user.id,
-      userName: user.name,
-      role: user.role,
-      kind: "create",
-      entity: "Company",
-      entityId: id,
-      description: `Created company ${form.name}`,
-    });
-    toast.success("Company created");
+    if (editing) {
+      upsert("companies", {
+        ...editing,
+        ...form,
+        updatedAt: new Date().toISOString(),
+      } as Company);
+      log({
+        userId: user.id,
+        userName: user.name,
+        role: user.role,
+        kind: "update",
+        entity: "Company",
+        entityId: editing.id,
+        description: `Updated company ${form.name}`,
+      });
+      toast.success("Company updated");
+    } else {
+      const id = `co_${Date.now()}`;
+      upsert("companies", {
+        ...form,
+        id,
+        status: "Prospect",
+        ownerId: user.id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as Company);
+      log({
+        userId: user.id,
+        userName: user.name,
+        role: user.role,
+        kind: "create",
+        entity: "Company",
+        entityId: id,
+        description: `Created company ${form.name}`,
+      });
+      toast.success("Company created");
+    }
     setOpen(false);
+    setEditing(null);
   };
 
   return (
@@ -114,7 +185,7 @@ export default function CompaniesPage() {
         description="Accounts and organizations in your CRM."
         icon={Building2}
         actions={
-          <Button size="sm" className="gradient-primary text-white" onClick={() => setOpen(true)}>
+          <Button size="sm" className="gradient-primary text-white" onClick={() => { setEditing(null); setForm({ name: "", industry: "Software", website: "", address: "", revenue: 0, employees: 0, status: "Prospect" }); setOpen(true); }}>
             <Plus className="mr-2 h-4 w-4" /> New Company
           </Button>
         }
@@ -137,10 +208,10 @@ export default function CompaniesPage() {
           },
         ]}
       />
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={(v) => { if (!v) { setOpen(false); setEditing(null); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>New Company</DialogTitle>
+            <DialogTitle>{editing ? "Edit Company" : "New Company"}</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-3">
             {[
@@ -168,13 +239,31 @@ export default function CompaniesPage() {
                 />
               </div>
             ))}
+            <div>
+              <Label>Status</Label>
+              <Select
+                value={form.status}
+                onValueChange={(value) => setForm({ ...form, status: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(["Active", "Prospect", "Inactive"] as const).map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="outline" onClick={() => { setOpen(false); setEditing(null); }}>
               Cancel
             </Button>
             <Button onClick={save} className="gradient-primary text-white">
-              Create
+              {editing ? "Update" : "Create"}
             </Button>
           </DialogFooter>
         </DialogContent>

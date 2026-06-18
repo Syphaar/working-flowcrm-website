@@ -23,6 +23,18 @@ export function createActivity(request: Request, response: Response) {
   response.status(201).json(activity);
 }
 
+export function updateActivity(request: Request, response: Response) {
+  const activity = activityService.updateActivity(
+    request.params.id as string,
+    request.body
+  );
+  if (!activity) {
+    response.status(404).json({ error: "Activity not found" });
+    return;
+  }
+  response.json(activity);
+}
+
 export function deleteActivity(request: Request, response: Response) {
   activityService.deleteActivity(request.params.id as string);
   response.json({ ok: true });

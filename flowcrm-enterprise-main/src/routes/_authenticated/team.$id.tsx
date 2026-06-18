@@ -1,10 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useData } from "@/context/DataContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/common/StatusPill";
-import { initials, fmtDateTime, relTime } from "@/lib/format";
+import { initials, fmtTimestamp, relTime } from "@/lib/format";
 import { ArrowLeft, Mail, Phone, Building2, KeyRound, ShieldCheck, LogOut } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Timeline } from "@/components/common/Timeline";
@@ -106,16 +106,20 @@ export default function TeamMemberDetail() {
                   </div>
                 </div>
                 <div>
+                  <div className="text-xs text-muted-foreground">Phone</div>
+                  <div className="font-semibold text-sm">{member.phone}</div>
+                </div>
+                <div>
                   <div className="text-xs text-muted-foreground">Last Active</div>
                   <div className="font-semibold text-sm">{relTime(member.lastActive)}</div>
                 </div>
               </div>
               <div className="text-xs text-muted-foreground border-t pt-3 space-y-1">
                 <div className="flex items-center gap-1">
-                  <LogOut className="h-3 w-3" /> Last login: {fmtDateTime(member.lastLogin)}
+                  <LogOut className="h-3 w-3" /> Last login: {member.lastLogin ? fmtTimestamp(member.lastLogin) : "—"}
                 </div>
                 <div className="flex items-center gap-1">
-                  <LogOut className="h-3 w-3" /> Last logout: {member.lastLogout ? fmtDateTime(member.lastLogout) : "—"}
+                  <LogOut className="h-3 w-3" /> Last logout: {member.lastLogout ? fmtTimestamp(member.lastLogout) : "—"}
                 </div>
               </div>
             </div>

@@ -37,3 +37,8 @@ export function deleteNote(request: Request, response: Response) {
   noteService.deleteNote(request.params.id as string);
   response.json({ ok: true });
 }
+
+export function bulkDeleteNotes(request: Request, response: Response) {
+  noteService.bulkDeleteNotes(request.body.ids || []);
+  response.json({ ok: true });
+}

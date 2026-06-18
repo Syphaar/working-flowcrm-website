@@ -55,7 +55,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
       <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b bg-background/80 px-3 backdrop-blur md:px-6">
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden">
+            <Button variant="ghost" size="icon" className="md:hidden hover:bg-[#5D52E5] hover:text-white">
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
@@ -63,7 +63,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
             <Sidebar onNavigate={() => {}} />
           </SheetContent>
         </Sheet>
-        <Button variant="ghost" size="icon" className="hidden md:flex" onClick={onToggleSidebar}>
+        <Button variant="ghost" size="icon" className="hidden md:flex hover:bg-[#5D52E5] hover:text-white" onClick={onToggleSidebar}>
           <Menu className="h-5 w-5" />
         </Button>
         <button
@@ -78,7 +78,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
         </button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="hover:bg-[#5D52E5] hover:text-white">
               {theme === "dark" ? (
                 <Moon className="h-4 w-4" />
               ) : theme === "light" ? (
@@ -89,20 +89,20 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setTheme("light")}>
+            <DropdownMenuItem className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground" onClick={() => setTheme("light")}>
               <Sun className="mr-2 h-4 w-4" /> Light
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme("dark")}>
+            <DropdownMenuItem className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground" onClick={() => setTheme("dark")}>
               <Moon className="mr-2 h-4 w-4" /> Dark
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme("system")}>
+            <DropdownMenuItem className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground" onClick={() => setTheme("system")}>
               <Monitor className="mr-2 h-4 w-4" /> System
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className="relative hover:bg-[#5D52E5] hover:text-white">
               <Bell className="h-4 w-4" />
               {unread > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
@@ -122,7 +122,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
             {myNotifs.map((notification) => (
               <DropdownMenuItem
                 key={notification.id}
-                className="flex-col items-start py-2"
+                className="flex-col items-start py-2 focus:bg-sidebar-accent focus:text-sidebar-accent-foreground"
                 onClick={() => navigate("/notifications")}
               >
                 <div className="font-medium text-sm">{notification.title}</div>
@@ -136,11 +136,19 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
             ))}
             <DropdownMenuSeparator />
             {unread > 5 && (
-              <DropdownMenuItem onClick={() => navigate("/notifications?filter=unread")}>
+              <DropdownMenuItem
+                className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground"
+                onClick={() => navigate("/notifications?filter=unread")}
+              >
                 More ({unread})
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem onClick={() => navigate("/notifications")}>View all</DropdownMenuItem>
+            <DropdownMenuItem
+              className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground"
+              onClick={() => navigate("/notifications")}
+            >
+              View all
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         <DropdownMenu>
@@ -161,13 +169,13 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
               <div className="text-xs text-muted-foreground">{user?.email}</div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => navigate("/settings")}>
+            <DropdownMenuItem className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground" onSelect={() => navigate("/settings")}>
               <UserIcon className="mr-2 h-4 w-4" /> Profile & Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => setLogoutOpen(true)}
-              className="text-destructive focus:text-destructive"
+              className="text-destructive focus:text-destructive focus:bg-sidebar-accent"
             >
               <LogOut className="mr-2 h-4 w-4" /> Sign out
             </DropdownMenuItem>

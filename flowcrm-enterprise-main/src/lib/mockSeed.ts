@@ -383,6 +383,7 @@ export function buildSeed() {
       value: between(5000, 350000),
       stage,
       status: stage === "Won" ? "Won" : stage === "Lost" ? "Lost" : "Open",
+      priority: pick(["Low", "Medium", "High", "Urgent"] as const),
       probability: stage === "Won" ? 100 : stage === "Lost" ? 0 : between(10, 90),
       ownerId: pick(ownerIds),
       closeDate: daysFromNow(between(-30, 90)),

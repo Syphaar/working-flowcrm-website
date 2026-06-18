@@ -22,7 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ListChecks, Plus, Check, RotateCcw } from "lucide-react";
+import { ListChecks, Plus, Check, RotateCcw, Pencil } from "lucide-react";
 import { fmtDate } from "@/lib/format";
 import { toast } from "sonner";
 import type { Task, Priority } from "@/lib/types";
@@ -36,10 +36,12 @@ export default function TasksPage() {
   }, []);
 
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Task | null>(null);
   const [form, setForm] = useState<any>({
     name: "",
     description: "",
     priority: "Medium",
+    status: "Open",
     dueDate: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10),
   });
   const data = isAdmin ? tasks : tasks.filter((task) => task.assigneeId === user?.id);
@@ -84,6 +86,26 @@ export default function TasksPage() {
       header: "",
       render: (task) => (
         <div className="flex justify-end gap-1">
+          {(isAdmin || task.assigneeId === user?.id) && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditing(task);
+                setForm({
+                  name: task.name,
+                  description: task.description,
+                  priority: task.priority,
+                  status: task.status,
+                  dueDate: task.dueDate.slice(0, 10),
+                });
+                setOpen(true);
+              }}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          )}
           {task.status !== "Done" ? (
             <Button
               size="sm"
@@ -115,32 +137,53 @@ export default function TasksPage() {
 
   const save = () => {
     if (!user) return;
-    const id = `tk_${Date.now()}`;
-    upsert("tasks", {
-      ...form,
-      id,
-      status: "Open",
-      assigneeId: user.id,
-      dueDate: new Date(form.dueDate).toISOString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    } as Task);
-    log({
-      userId: user.id,
-      userName: user.name,
-      role: user.role,
-      kind: "create",
-      entity: "Task",
-      entityId: id,
-      description: `Created task "${form.name}".`,
-    });
+    if (editing) {
+      upsert("tasks", {
+        ...editing,
+        ...form,
+        dueDate: new Date(form.dueDate).toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as Task);
+      log({
+        userId: user.id,
+        userName: user.name,
+        role: user.role,
+        kind: "update",
+        entity: "Task",
+        entityId: editing.id,
+        description: `Updated task "${form.name}".`,
+      });
+      toast.success("Task updated");
+    } else {
+      const id = `tk_${Date.now()}`;
+      upsert("tasks", {
+        ...form,
+        id,
+        status: "Open",
+        assigneeId: user.id,
+        dueDate: new Date(form.dueDate).toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as Task);
+      log({
+        userId: user.id,
+        userName: user.name,
+        role: user.role,
+        kind: "create",
+        entity: "Task",
+        entityId: id,
+        description: `Created task "${form.name}".`,
+      });
+      toast.success("Task created");
+    }
     setForm({
       name: "",
       description: "",
       priority: "Medium",
+      status: "Open",
       dueDate: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10),
     });
-    toast.success("Task created");
+    setEditing(null);
     setOpen(false);
   };
 
@@ -173,10 +216,10 @@ export default function TasksPage() {
           },
         ]}
       />
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={(v) => { if (!v) { setOpen(false); setEditing(null); setForm({ name: "", description: "", priority: "Medium", status: "Open", dueDate: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10) }); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>New Task</DialogTitle>
+            <DialogTitle>{editing ? "Edit Task" : "New Task"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
@@ -193,7 +236,7 @@ export default function TasksPage() {
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <div>
                 <Label>Priority</Label>
                 <Select
@@ -213,6 +256,24 @@ export default function TasksPage() {
                 </Select>
               </div>
               <div>
+                <Label>Status</Label>
+                <Select
+                  value={form.status}
+                  onValueChange={(value) => setForm({ ...form, status: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(["Open", "In Progress", "Done"] as const).map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {status}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <Label>Due date</Label>
                 <Input
                   type="date"
@@ -223,11 +284,11 @@ export default function TasksPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="outline" onClick={() => { setOpen(false); setEditing(null); setForm({ name: "", description: "", priority: "Medium", status: "Open", dueDate: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10) }); }}>
               Cancel
             </Button>
             <Button onClick={save} className="gradient-primary text-white">
-              Create
+              {editing ? "Update" : "Create"}
             </Button>
           </DialogFooter>
         </DialogContent>

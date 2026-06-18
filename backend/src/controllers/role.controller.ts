@@ -33,3 +33,8 @@ export function deleteRole(request: Request, response: Response) {
   roleService.deleteRole(request.params.id as string);
   response.json({ ok: true });
 }
+
+export function bulkDeleteRoles(request: Request, response: Response) {
+  roleService.bulkDeleteRoles(request.body.ids || []);
+  response.json({ ok: true });
+}

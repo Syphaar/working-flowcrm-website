@@ -106,6 +106,7 @@ export interface Deal {
   value: number;
   stage: string;
   status: "Open" | "Won" | "Lost";
+  priority: Priority;
   probability: number;
   ownerId: string;
   closeDate: string;

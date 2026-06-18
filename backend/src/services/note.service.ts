@@ -1,4 +1,4 @@
-import { getAll, findById, insert, removeById } from "../config/database.js";
+import { getAll, findById, insert, removeById, bulkRemoveByIds } from "../config/database.js";
 
 export function getNotes(entity?: string, entityId?: string) {
   let notes = getAll<any>("notes");
@@ -44,5 +44,10 @@ export function updateNote(id: string, updates: any) {
 
 export function deleteNote(id: string) {
   removeById("notes", id);
+  return { ok: true };
+}
+
+export function bulkDeleteNotes(ids: string[]) {
+  bulkRemoveByIds("notes", ids);
   return { ok: true };
 }

@@ -29,10 +29,11 @@ import type { User, Role } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 
 const DEFAULT_ROLES = ["super_admin", "manager", "sales_executive", "marketing"];
+const DEPARTMENTS = ["Sales", "Marketing", "Engineering", "Support", "HR", "Finance", "Operations", "Legal"];
 
 export default function TeamPage() {
   const { users, roles: backendRoles, upsert, bulkRemove, log } = useData();
-  const { user, can } = useAuth();
+  const { user, isAdmin, can, isHydrated } = useAuth();
   const nav = useNavigate();
 
   const roleOptions = useMemo(() => {
@@ -47,6 +48,7 @@ export default function TeamPage() {
   }, []);
 
   const [open, setOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState<User | null>(null);
   const [form, setForm] = useState<any>({
     name: "",
     email: "",
@@ -54,25 +56,29 @@ export default function TeamPage() {
     department: "Sales",
   });
 
-  const [editing, setEditing] = useState<{ id: string; field: string } | null>(null);
-  const [editValue, setEditValue] = useState<string>("");
+  const isEditing = !!editingMember;
 
-  const saveEdit = (member: User) => {
-    const updated = { ...member, [editing!.field]: editValue };
-    upsert("users", updated);
-    log({
-      userId: user!.id,
-      userName: user!.name,
-      role: user!.role,
-      kind: "role_change",
-      entity: "User",
-      entityId: member.id,
-      description: `Updated ${member.name} ${editing!.field} to ${editValue}.`,
-    });
-    toast.success(`${editing!.field} updated`);
-    setEditing(null);
+  const resetForm = () => {
+    setForm({ name: "", email: "", role: "sales_executive", department: "Sales" });
+    setEditingMember(null);
+    setOpen(false);
   };
 
+  const openEdit = (member: User) => {
+    setEditingMember(member);
+    setForm({
+      name: member.name,
+      email: member.email,
+      role: member.role,
+      department: member.department,
+    });
+    setOpen(true);
+  };
+
+  if (!isHydrated)
+    return (
+      <div className="p-8 text-center text-muted-foreground">Loading...</div>
+    );
   if (!can("manage_users"))
     return (
       <div className="p-8 text-center">
@@ -103,79 +109,16 @@ export default function TeamPage() {
     {
       key: "role",
       header: "Role",
-      render: (member) => {
-        const isEditing = editing?.id === member.id && editing?.field === "role";
-        return isEditing ? (
-          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-            <Select value={editValue} onValueChange={setEditValue}>
-              <SelectTrigger className="h-8 w-36">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {roleOptions.map((role) => (
-                  <SelectItem key={role} value={role} className="capitalize">
-                    {role.replace("_", " ")}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button size="sm" variant="ghost" className="h-8 px-2" onClick={() => saveEdit(member)}>
-              Save
-            </Button>
-            <Button size="sm" variant="ghost" className="h-8 px-2" onClick={() => setEditing(null)}>
-              Cancel
-            </Button>
-          </div>
-        ) : (
-          <button
-            className="inline-flex items-center gap-1.5 capitalize hover:text-primary transition-colors group/edit"
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditing({ id: member.id, field: "role" });
-              setEditValue(member.role);
-            }}
-            title="Edit role"
-          >
-            {member.role.replace("_", " ")}
-            <Pencil className="h-3 w-3 opacity-0 group-hover/edit:opacity-100 transition-opacity" />
-          </button>
-        );
-      },
+      render: (member) => (
+        <span className="capitalize">{member.role.replace("_", " ")}</span>
+      ),
     },
     {
       key: "department",
       header: "Department",
-      render: (member) => {
-        const isEditing = editing?.id === member.id && editing?.field === "department";
-        return isEditing ? (
-          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-            <Input
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              className="h-8 w-36"
-            />
-            <Button size="sm" variant="ghost" className="h-8 px-2" onClick={() => saveEdit(member)}>
-              Save
-            </Button>
-            <Button size="sm" variant="ghost" className="h-8 px-2" onClick={() => setEditing(null)}>
-              Cancel
-            </Button>
-          </div>
-        ) : (
-          <button
-            className="inline-flex items-center gap-1.5 hover:text-primary transition-colors group/edit"
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditing({ id: member.id, field: "department" });
-              setEditValue(member.department);
-            }}
-            title="Edit department"
-          >
-            {member.department}
-            <Pencil className="h-3 w-3 opacity-0 group-hover/edit:opacity-100 transition-opacity" />
-          </button>
-        );
-      },
+      render: (member) => (
+        <span>{member.department}</span>
+      ),
     },
     { key: "status", header: "Presence", render: (member) => <StatusPill value={member.status} /> },
     {
@@ -185,36 +128,75 @@ export default function TeamPage() {
       accessor: (member) => member.lastActive,
       sortable: true,
     },
+    ...(isAdmin
+      ? [
+          {
+            key: "actions" as const,
+            header: "" as const,
+            render: (member: User) => (
+              <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => openEdit(member)}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </div>
+            ),
+          },
+        ]
+      : []),
   ];
 
-  const invite = () => {
-    const id = `u_${Date.now()}`;
-    upsert("users", {
-      id,
-      name: form.name,
-      email: form.email,
-      password: "Demo123",
-      phone: "",
-      department: form.department,
-      role: form.role as Role,
-      roles: [form.role as Role],
-      status: "offline",
-      lastActive: new Date().toISOString(),
-      lastLogin: "",
-      lastLogout: "",
-      createdAt: new Date().toISOString(),
-    });
-    log({
-      userId: user!.id,
-      userName: user!.name,
-      role: user!.role,
-      kind: "create",
-      entity: "User",
-      entityId: id,
-      description: `Invited ${form.name} (${form.role}).`,
-    });
-    toast.success("Member invited");
-    setOpen(false);
+  const save = () => {
+    if (!user) return;
+    if (isEditing && editingMember) {
+      upsert("users", {
+        ...editingMember,
+        name: form.name,
+        role: form.role as Role,
+        department: form.department,
+      });
+      log({
+        userId: user.id,
+        userName: user.name,
+        role: user.role,
+        kind: "role_change",
+        entity: "User",
+        entityId: editingMember.id,
+        description: `Updated ${form.name} details.`,
+      });
+      toast.success("Member updated");
+    } else {
+      const id = `u_${Date.now()}`;
+      upsert("users", {
+        id,
+        name: form.name,
+        email: form.email,
+        password: "Demo123",
+        phone: "",
+        department: form.department,
+        role: form.role as Role,
+        roles: [form.role as Role],
+        status: "offline",
+        lastActive: new Date().toISOString(),
+        lastLogin: "",
+        lastLogout: "",
+        createdAt: new Date().toISOString(),
+      });
+      log({
+        userId: user.id,
+        userName: user.name,
+        role: user.role,
+        kind: "create",
+        entity: "User",
+        entityId: id,
+        description: `Invited ${form.name} (${form.role}).`,
+      });
+      toast.success("Member invited");
+    }
+    resetForm();
   };
 
   return (
@@ -224,7 +206,7 @@ export default function TeamPage() {
         description="Manage members, roles, and access."
         icon={Users}
         actions={
-          <Button size="sm" className="gradient-primary text-white" onClick={() => setOpen(true)}>
+          <Button size="sm" className="gradient-primary text-white" onClick={() => { setEditingMember(null); setForm({ name: "", email: "", role: "sales_executive", department: "Sales" }); setOpen(true); }}>
             <Plus className="mr-2 h-4 w-4" /> Invite Member
           </Button>
         }
@@ -250,10 +232,10 @@ export default function TeamPage() {
           },
         ]}
       />
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Invite Member</DialogTitle>
+            <DialogTitle>{isEditing ? "Edit Member" : "Invite Member"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
@@ -263,14 +245,16 @@ export default function TeamPage() {
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
             </div>
-            <div>
-              <Label>Email</Label>
-              <Input
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-              />
-            </div>
+            {!isEditing && (
+              <div>
+                <Label>Email</Label>
+                <Input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                />
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Role</Label>
@@ -292,19 +276,30 @@ export default function TeamPage() {
               </div>
               <div>
                 <Label>Department</Label>
-                <Input
+                <Select
                   value={form.department}
-                  onChange={(e) => setForm({ ...form, department: e.target.value })}
-                />
+                  onValueChange={(value) => setForm({ ...form, department: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DEPARTMENTS.map((dept) => (
+                      <SelectItem key={dept} value={dept}>
+                        {dept}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="outline" onClick={resetForm}>
               Cancel
             </Button>
-            <Button onClick={invite} className="gradient-primary text-white">
-              Invite
+            <Button onClick={save} className="gradient-primary text-white">
+              {isEditing ? "Save" : "Invite"}
             </Button>
           </DialogFooter>
         </DialogContent>

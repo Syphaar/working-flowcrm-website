@@ -1,4 +1,4 @@
-import { getAll, findById, insert, removeById } from "../config/database.js";
+import { getAll, findById, insert, removeById, bulkRemoveByIds } from "../config/database.js";
 
 const defaultRoles = [
   {
@@ -82,5 +82,10 @@ export function updateRole(id: string, updates: any) {
 
 export function deleteRole(id: string) {
   removeById("roles", id);
+  return { ok: true };
+}
+
+export function bulkDeleteRoles(ids: string[]) {
+  bulkRemoveByIds("roles", ids);
   return { ok: true };
 }
