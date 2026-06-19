@@ -11,7 +11,6 @@ import {
 import type { User, Permission, RoleDefinition } from "@/lib/types";
 import { ROLE_PERMISSIONS } from "@/lib/types";
 import { getToken, setToken, request } from "@/services/api";
-import { storage } from "@/lib/storage";
 import * as authService from "@/services/auth.service";
 
 interface AuthCtx {
@@ -33,6 +32,8 @@ interface AuthCtx {
   logout: () => void;
   can: (permission: Permission) => boolean;
   isAdmin: boolean;
+  rolesMatrix: Record<string, Permission[]>;
+  setRolesMatrix: (matrix: Record<string, Permission[]>) => void;
 }
 
 const Ctx = createContext<AuthCtx | null>(null);
@@ -40,6 +41,7 @@ const Ctx = createContext<AuthCtx | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [rolesMatrix, setRolesMatrix] = useState<Record<string, Permission[]>>({ ...ROLE_PERMISSIONS });
 
   useEffect(() => {
     const token = getToken();
@@ -53,16 +55,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(currentUser);
         try {
           const roles = await request<RoleDefinition[]>("/roles");
-          const stored = storage.get<Record<string, string[]>>("roles:matrix", {});
-          const updated = { ...stored };
+          const matrix: Record<string, Permission[]> = {};
           for (const role of roles) {
             if (role.permissions) {
-              updated[role.name] = role.permissions;
+              matrix[role.name] = role.permissions as Permission[];
             }
           }
-          storage.set("roles:matrix", updated);
+          for (const [role, perms] of Object.entries(ROLE_PERMISSIONS)) {
+            if (!matrix[role]) {
+              matrix[role] = perms;
+            }
+          }
+          setRolesMatrix(matrix);
         } catch {
-          // roles fetch failed, fallback to defaults
+          setRolesMatrix({ ...ROLE_PERMISSIONS });
         }
       })
       .catch(() => {
@@ -79,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     setToken(null);
     setUser(null);
+    setRolesMatrix({ ...ROLE_PERMISSIONS });
   }, []);
 
   const isAdmin = user?.role === "super_admin";
@@ -86,11 +93,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const can = useCallback(
     (permission: Permission) => {
       if (!user) return false;
-      const matrix = storage.get<Record<string, Permission[]>>("roles:matrix", {});
-      const rolePerms = matrix[user.role] ?? ROLE_PERMISSIONS[user.role];
+      const rolePerms = rolesMatrix[user.role];
       return rolePerms?.includes(permission) ?? false;
     },
-    [user],
+    [user, rolesMatrix],
   );
 
   const value = useMemo<AuthCtx>(() => {
@@ -156,8 +162,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       can,
       isAdmin,
+      rolesMatrix,
+      setRolesMatrix,
     };
-  }, [user, isHydrated, logout, can, isAdmin]);
+  }, [user, isHydrated, logout, can, isAdmin, rolesMatrix]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

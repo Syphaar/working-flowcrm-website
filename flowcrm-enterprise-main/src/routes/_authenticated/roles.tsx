@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { storage } from "@/lib/storage";
 import { useAuth } from "@/context/AuthContext";
 import { useData } from "@/context/DataContext";
 import { PageHeader } from "@/components/common/PageHeader";
@@ -23,20 +22,8 @@ import { request } from "@/services/api";
 
 const DEFAULT_ROLES = ["super_admin", "manager", "sales_executive", "marketing"];
 
-function initMatrix(roleNames: string[]): Record<string, Permission[]> {
-  const stored = storage.get<Record<string, Permission[]>>("roles:matrix", {});
-  const next = { ...stored };
-  for (const role of roleNames) {
-    if (!next[role]) {
-      next[role] = role === "super_admin" ? [...ALL_PERMISSIONS] : [];
-    }
-  }
-  storage.set("roles:matrix", next);
-  return next;
-}
-
 export default function RolesPage() {
-  const { can, isHydrated } = useAuth();
+  const { can, isHydrated, rolesMatrix, setRolesMatrix } = useAuth();
   const { roles, setAll } = useData();
   useEffect(() => {
     document.title = "Roles — FlowCRM";
@@ -49,25 +36,14 @@ export default function RolesPage() {
     ];
   }, [roles]);
 
-  const [matrix, setMatrix] = useState<Record<string, Permission[]>>(() =>
-    initMatrix(DEFAULT_ROLES),
-  );
+  const [matrix, setMatrix] = useState<Record<string, Permission[]>>(() => ({ ...rolesMatrix }));
 
   useEffect(() => {
-    setMatrix((prev) => {
-      const next = { ...prev };
-      for (const role of mergedRoles) {
-        if (!next[role]) {
-          next[role] = role === "super_admin" ? [...ALL_PERMISSIONS] : [];
-        }
-      }
-      storage.set("roles:matrix", next);
-      return next;
-    });
-  }, [mergedRoles]);
+    setMatrix({ ...rolesMatrix });
+  }, [rolesMatrix]);
 
   const persistMatrix = (next: Record<string, Permission[]>) => {
-    storage.set("roles:matrix", next);
+    setRolesMatrix(next);
   };
 
   const toggle = async (role: string, permission: Permission) => {
@@ -199,7 +175,7 @@ export default function RolesPage() {
         const next = { ...prev };
         delete next[editingRole.name];
         next[name] = editPermissions;
-        storage.set("roles:matrix", next);
+        persistMatrix(next);
         return next;
       });
       toast.success(`Role "${name}" updated`);
