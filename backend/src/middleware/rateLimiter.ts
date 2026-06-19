@@ -14,7 +14,12 @@ export function rateLimiter(
 ): void {
   const isDev = process.env.NODE_ENV !== "production";
   const windowMs = isDev ? 60000 : parseInt(process.env.RATE_LIMIT_WINDOW_MS || "900000", 10);
-  const maxRequests = isDev ? 1000 : parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || "100", 10);
+  const maxRequests = isDev ? 1000 : parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || "500", 10);
+
+  if (request.path === "/api/health" || request.path.startsWith("/socket.io")) {
+    next();
+    return;
+  }
 
   const ip = request.ip || request.socket.remoteAddress || "unknown";
   const now = Date.now();
