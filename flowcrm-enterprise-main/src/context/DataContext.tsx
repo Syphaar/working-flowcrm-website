@@ -154,7 +154,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
 
     const token = getToken();
-    const wsUrl = import.meta.env.VITE_WS_URL || import.meta.env.VITE_API_BASE_URL || "";
+    const wsUrl = import.meta.env.VITE_WS_URL || import.meta.env.VITE_API_BASE_URL || "https://flowcrm-website.onrender.com";
     const socket: Socket = io(wsUrl || undefined, {
       auth: { token },
     });

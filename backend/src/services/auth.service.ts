@@ -265,5 +265,6 @@ export function getCurrentUser(userId: string) {
     throw new Error("User not found");
   }
 
-  return user;
+  const { password: _, twoFactorSecret: __, ...userWithoutSensitive } = user;
+  return userWithoutSensitive;
 }

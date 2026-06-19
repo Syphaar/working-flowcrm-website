@@ -31,7 +31,7 @@ async function request<T>(
 ): Promise<T> {
   const token = getToken();
   const queryString = options?.params ? `?${new URLSearchParams(options.params).toString()}` : "";
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || "https://flowcrm-website.onrender.com";
   const url = `${baseUrl}/api${path}${queryString}`;
 
   const headers: Record<string, string> = {
